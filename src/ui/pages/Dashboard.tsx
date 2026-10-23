@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Workflow } from '../../shared/schema/types';
 import { validateWorkflow } from '../../shared/schema/validate';
+import { countSteps } from '../../shared/schema/tree';
 import { exportWorkflows, ImportError, parseImport } from '../../shared/schema/importExport';
 import type { ImportResult } from '../../shared/schema/importExport';
 import { newWorkflow } from '../../shared/schema/factory';
@@ -255,6 +256,7 @@ function WorkflowCard(props: {
 }) {
   const w = props.workflow;
   const valid = useMemo(() => validateWorkflow(w).valid, [w]);
+  const stepCount = useMemo(() => countSteps(w.steps), [w.steps]);
   return (
     <article className="card wf-card">
       <div className="row" style={{ flexWrap: 'nowrap' }}>
@@ -268,7 +270,7 @@ function WorkflowCard(props: {
       <p className="desc">{w.description || <span className="muted">No description</span>}</p>
       <div className="meta">
         <span>
-          {w.steps.length} step{w.steps.length === 1 ? '' : 's'}
+          {stepCount} step{stepCount === 1 ? '' : 's'}
         </span>
         {!valid && <StatusBadge status="draft" />}
         {w.lastRun ? (

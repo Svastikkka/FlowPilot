@@ -317,6 +317,14 @@ describe('settings and privacy', () => {
 });
 
 describe('logic & data in the UI', () => {
+  it('counts nested steps on dashboard cards', async () => {
+    const loop = { ...step('repeat', { times: 2 }), children: [step('clear', { locator: css('#a') }), step('clear', { locator: css('#b') })] };
+    await saveWorkflow(wf([step('openUrl', { url: 'https://a.com' }), loop as never], { name: 'Nested count' }));
+    renderAt('#/');
+    const card = (await screen.findByRole('link', { name: 'Nested count' })).closest('article') as HTMLElement;
+    expect(within(card).getByText('4 steps')).toBeInTheDocument();
+  });
+
   it('adds an If block, puts steps inside it and nests with the keyboard', async () => {
     const user = userEvent.setup();
     const w = await saveWorkflow(wf([step('openUrl', { url: 'https://a.com' })], { name: 'Logic' }));

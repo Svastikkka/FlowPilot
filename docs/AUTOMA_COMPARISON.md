@@ -14,7 +14,7 @@ may be copied into FlowPilot.** Doing so would put FlowPilot under the AGPL.
 | Custom code | JavaScript code block runs arbitrary JS in pages | No arbitrary code, by design |
 | Network | HTTP requests, Google Sheets/Drive, marketplace, AI workflows | No external servers |
 | Permissions | `tabs`, `proxy`, `debugger`, `webNavigation`, `alarms`, `offscreen`, `<all_urls>` at install; optional `cookies`, `downloads`, `notifications`, `contextMenus`, `clipboardRead` | `storage`, `scripting`, `activeTab`, `unlimitedStorage`; host access requested per site |
-| Store privacy disclosure | Declares handling of personally identifiable information and authentication information | Collects nothing |
+| Store privacy disclosure | Declares handling of personally identifiable information and authentication information | Handles data on the device only; transmits nothing |
 
 ## Block-by-block mapping
 

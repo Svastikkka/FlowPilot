@@ -10,7 +10,7 @@ export function PrivacyPage() {
       <article className="card card-pad prose">
         <h2>The short version</h2>
         <ul>
-          <li>FlowPilot has no servers, accounts, analytics, advertising or remote logging.</li>
+          <li>FlowPilot processes and stores data only on this device and has no servers, accounts, analytics, advertising or remote logging.</li>
           <li>Workflows, run history, extracted results, screenshots and settings are stored only in this browser profile.</li>
           <li>Nothing FlowPilot stores is sent anywhere by FlowPilot.</li>
         </ul>

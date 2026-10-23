@@ -67,7 +67,11 @@ after each rebuild.
 
 ```bash
 npm run package        # builds and writes release/flowpilot-<version>.zip
+npm run store:assets   # regenerates screenshots, promo tiles and the store icon
 ```
+
+Every listing field, permission justification and asset is listed in
+[store/LISTING.md](store/LISTING.md).
 
 ---
 
@@ -231,7 +235,8 @@ src/storage    IndexedDB repositories + chrome.storage settings
 src/ui         React dashboard, editor, monitor, popup
 src/templates  starter templates
 tests          unit / functional / e2e
-docs           architecture, store listing
+docs           architecture, Automa comparison
+store          Chrome Web Store listing, privacy policy for the gist, asset generator
 ```
 
 The `src/shared/features.ts` registry is where future premium capabilities would

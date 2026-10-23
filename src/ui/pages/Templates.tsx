@@ -1,6 +1,7 @@
 import { TEMPLATES } from '../../templates';
 import type { Template } from '../../templates';
 import { actionDef } from '../../shared/schema/actions';
+import { countSteps } from '../../shared/schema/tree';
 import { saveWorkflow } from '../../storage/workflows';
 import { navigate } from '../router';
 import { useToast } from '../components/ui';
@@ -41,7 +42,7 @@ export function TemplatesPage() {
                 <button className="btn btn-sm btn-primary" onClick={() => void createFromTemplate(t).catch((e: Error) => toast(e.message, 'error'))}>
                   Use template
                 </button>
-                <span className="muted small">{preview.steps.length} steps</span>
+                <span className="muted small">{countSteps(preview.steps)} steps</span>
               </div>
             </article>
           );

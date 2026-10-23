@@ -7,9 +7,28 @@ policy describes what data FlowPilot handles and where that data goes.
 
 ## Summary
 
-FlowPilot does not collect, transmit, sell or share any personal data. It has
-no servers, accounts, analytics, advertising or remote logging. Everything
-FlowPilot stores stays in your Chrome profile on your device.
+FlowPilot processes and stores data only on your device. It does not transmit,
+sell or share any of it: there are no servers, accounts, analytics, advertising
+or remote logging. Everything FlowPilot stores stays in your Chrome profile.
+
+## Categories of data handled (on your device only)
+
+To do what you configure, FlowPilot handles these kinds of data locally:
+
+- **Website content**: text it reads from pages, page titles, screenshots and
+  results tables produced by your workflows.
+- **Web history**: the addresses and titles of pages your workflows open, with
+  timestamps, kept in run history.
+- **Personally identifiable information**: only what you put in workflows
+  yourself, for example names or e-mail addresses in variables or imported
+  CSV data.
+- **Authentication information**: only if you automate a login. Values of
+  variables marked *secret* are held in memory for the duration of a run and
+  are never saved. FlowPilot never reads password fields.
+
+FlowPilot does not monitor your clicks, keystrokes or browsing outside a
+workflow you run. It does not handle location, health, financial or personal
+communications data.
 
 ## Data FlowPilot stores on your device
 

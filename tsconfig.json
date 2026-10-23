@@ -15,5 +15,5 @@
     "resolveJsonModule": true,
     "types": ["chrome", "node", "vitest/globals", "@testing-library/jest-dom"]
   },
-  "include": ["src", "tests", "vite.config.ts", "vite.content.config.ts", "playwright.config.ts"]
+  "include": ["src", "tests", "vite.config.ts", "vite.content.config.ts", "playwright.config.ts", "store"]
 }

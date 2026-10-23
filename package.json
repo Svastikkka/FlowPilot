@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "icons": "node scripts/make-icons.mjs",
     "package": "npm run build && node scripts/package.mjs",
-    "test:e2e": "npm run build && playwright test"
+    "test:e2e": "npm run build && playwright test",
+    "store:assets": "npm run build && playwright test --config store/playwright.store.config.ts"
   },
   "dependencies": {
     "idb": "^8.0.4",
