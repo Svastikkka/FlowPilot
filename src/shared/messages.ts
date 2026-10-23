@@ -16,6 +16,7 @@ export type DomRequest =
   | { op: 'extractText'; locator: Locator; all: boolean }
   | { op: 'scroll'; mode: ScrollParams['mode']; locator?: Locator; x?: number; y?: number }
   | { op: 'markNth'; locator: Locator; index: number; mark: string }
+  | { op: 'historyGo'; direction: 'back' | 'forward' }
   | { op: 'pageInfo' }
   | { op: 'textPresent'; text: string };
 
@@ -40,6 +41,7 @@ export interface DomResultMap {
   extractText: { text: string; count: number };
   scroll: { message: string };
   markNth: { found: boolean; total: number; text: string };
+  historyGo: { message: string };
   pageInfo: PageInfo;
   textPresent: { present: boolean };
 }

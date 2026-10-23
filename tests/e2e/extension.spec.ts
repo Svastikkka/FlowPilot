@@ -234,3 +234,62 @@ test('runs loops over data rows and page elements, filling a results table', asy
   await expect(table.getByRole('row')).toHaveCount(7);
   await expect(app.getByText('ran 3×').first()).toBeVisible();
 });
+
+test('goes back and forward through pages the run opened', async ({ app, site }) => {
+  const file = join(mkdtempSync(join(tmpdir(), 'fp-history-')), 'history.json');
+  const now = Date.now();
+  const base = { schemaVersion: 2, description: '', tags: [], favorite: false, variables: [], createdAt: now, updatedAt: now };
+  const settings = { defaultTimeoutMs: 5000, defaultRetries: 0, defaultOnError: 'stop', stepDelayMs: 0 };
+  writeFileSync(
+    file,
+    JSON.stringify({
+      format: 'flowpilot.workflows',
+      schemaVersion: 2,
+      workflows: [
+        {
+          ...base,
+          id: 'h',
+          name: 'History round trip',
+          settings,
+          steps: [
+            { id: '1', type: 'openUrl', params: { url: `${site.url}/form` } },
+            { id: '2', type: 'openUrl', params: { url: `${site.url}/thanks?name=One` } },
+            { id: '3', type: 'openUrl', params: { url: `${site.url}/thanks?name=Two` } },
+            { id: '4', type: 'navigate', params: { direction: 'back' } },
+            { id: '5', type: 'extractText', params: { locator: { strategy: 'css', value: 'h1' }, variable: 'afterBack', all: false } },
+            { id: '6', type: 'navigate', params: { direction: 'back' } },
+            { id: '7', type: 'capturePage', params: { what: 'url', variable: 'firstUrl' } },
+            { id: '8', type: 'navigate', params: { direction: 'forward' } },
+            { id: '9', type: 'extractText', params: { locator: { strategy: 'css', value: 'h1' }, variable: 'afterForward', all: false } },
+          ],
+        },
+        {
+          ...base,
+          id: 'n',
+          name: 'Back with no history',
+          settings,
+          steps: [
+            { id: '1', type: 'openUrl', params: { url: `${site.url}/form` } },
+            { id: '2', type: 'navigate', params: { direction: 'forward' } },
+          ],
+        },
+      ],
+    }),
+  );
+  await app.locator('input[type=file]').setInputFiles(file);
+  await app.getByRole('dialog', { name: 'Import complete' }).getByRole('button', { name: 'Done' }).click();
+
+  await app.getByRole('article').filter({ hasText: 'History round trip' }).getByRole('button', { name: '▶ Run' }).click();
+  await app.getByRole('dialog').getByRole('button', { name: /Start run/ }).click();
+  await expect(app.locator('.page-header .badge').first()).toHaveText('Succeeded', { timeout: 30_000 });
+  const results = app.getByRole('region', { name: 'Results', exact: true });
+  await expect(results.getByRole('cell', { name: 'Thanks, One' }).first()).toBeVisible();
+  await expect(results.getByRole('cell', { name: `${site.url}/form` })).toBeVisible();
+  await expect(app.getByRole('region', { name: 'Steps' }).getByText(`Went forward — now at ${site.url}/thanks?name=One`)).toBeVisible();
+
+  await app.getByRole('link', { name: 'Workflows', exact: true }).click();
+  await app.getByRole('article').filter({ hasText: 'Back with no history' }).getByRole('button', { name: '▶ Run' }).click();
+  await app.getByRole('dialog').getByRole('button', { name: /Start run/ }).click();
+  await expect(app.locator('.page-header .badge').first()).toHaveText('Failed', { timeout: 30_000 });
+  await expect(app.getByRole('alert').filter({ hasText: 'There is no page to go to in that direction' })).toBeVisible();
+});

@@ -267,6 +267,14 @@ function perform(doc: Document, req: DomRequest): DomResultMap[keyof DomResultMa
       return { found: true, total: all.length, text: isSensitiveField(el) ? '' : visibleText(el) };
     }
 
+    case 'historyGo': {
+      // Deferred so the response is sent before the page unloads. Page-initiated
+      // history navigation isn't subject to Chrome's skippable-entry rule.
+      const win = doc.defaultView!;
+      win.setTimeout(() => (req.direction === 'back' ? win.history.back() : win.history.forward()), 0);
+      return { message: `Requested ${req.direction}` };
+    }
+
     case 'pageInfo':
       return { url: doc.location.href, title: doc.title, readyState: doc.readyState };
 

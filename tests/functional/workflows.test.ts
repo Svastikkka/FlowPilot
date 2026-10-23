@@ -78,35 +78,37 @@ describe('starter templates against realistic pages', () => {
   });
 
   it('Extract page information: collects text, title and URL and offers them for copying', async () => {
+    const url = 'https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html';
     const browser = new JsdomBrowser({
-      'https://example.com/': page(
-        'Example Domain',
-        `<div><h1>Example Domain</h1><p>This domain is for use in illustrative examples.</p><p><a href="https://www.iana.org/domains/example">More information...</a></p></div>`,
+      [url]: page(
+        'A Light in the Attic | Books to Scrape - Sandbox',
+        `<article class="product_page"><div class="product_main"><h1>A Light in the Attic</h1><p class="price_color">£51.77</p></div>
+         <div id="product_description"><h2>Product Description</h2></div><p>It's hard to imagine a world without A Light in the Attic.</p></article>`,
       ),
     });
     const { result, prompts } = await runWorkflow(fast(templateById('extract-info')!.build()), browser, {
       answer: (p) => (p.kind === 'clipboard' ? { action: 'copied' } : { action: 'continue' }),
     });
     expect(result.status).toBe('succeeded');
-    expect(result.variables).toMatchObject({ heading: 'Example Domain', pageTitle: 'Example Domain', pageUrl: 'https://example.com/' });
+    expect(result.variables).toMatchObject({ heading: 'A Light in the Attic', pageTitle: 'A Light in the Attic | Books to Scrape - Sandbox', pageUrl: url });
     expect(result.results.map((r) => r.variable)).toEqual(['heading', 'paragraphs', 'pageTitle', 'pageUrl']);
-    expect(prompts[0].text).toContain('Example Domain (https://example.com/)');
-    expect(prompts[0].text).toContain('This domain is for use in illustrative examples.\nMore information...');
+    expect(prompts[0].text).toContain(`A Light in the Attic | Books to Scrape - Sandbox (${url})`);
+    expect(prompts[0].text).toContain("It's hard to imagine a world without A Light in the Attic.");
   });
 
   it('Visit a set of URLs: navigates through pages and history', async () => {
     const browser = new JsdomBrowser({
-      'https://example.com/': page('Example Domain', '<h1>com</h1>'),
-      'https://example.org/': page('Example Org', '<h1>org</h1>'),
-      'https://www.iana.org/help/example-domains': page('Example Domains', '<h1>iana</h1>'),
+      'https://quotes.toscrape.com/': page('Quotes to Scrape', '<h1>quotes</h1>'),
+      'https://books.toscrape.com/': page('All products | Books to Scrape - Sandbox', '<h1>books</h1>'),
+      'https://en.wikipedia.org/wiki/Web_scraping': page('Web scraping - Wikipedia', '<h1>wiki</h1>'),
     });
     const { result, prompts, tabId } = await runWorkflow(fast(templateById('visit-urls')!.build()), browser, {
       answer: () => ({ action: 'copied' }),
     });
     expect(result.status).toBe('succeeded');
-    expect(prompts[0].text).toBe('1. Example Domain\n2. Example Org\n3. Example Domains');
-    expect(browser.currentUrl(tabId)).toBe('https://example.org/');
-    expect(result.steps[6].message).toBe('Went back — now at https://example.org/');
+    expect(prompts[0].text).toBe('1. Quotes to Scrape\n2. All products | Books to Scrape - Sandbox\n3. Web scraping - Wikipedia');
+    expect(browser.currentUrl(tabId)).toBe('https://books.toscrape.com/');
+    expect(result.steps[6].message).toBe('Went back — now at https://books.toscrape.com/');
   });
 
   it('Search and capture: submits with Enter, waits for results, extracts and screenshots', async () => {

@@ -1,0 +1,135 @@
+{
+  "format": "flowpilot.workflows",
+  "schemaVersion": 2,
+  "exportedAt": "2026-10-23T00:00:00.000Z",
+  "workflows": [
+    {
+      "schemaVersion": 2,
+      "id": "wikipedia-lookup-from-csv",
+      "favorite": false,
+      "variables": [],
+      "createdAt": 1792713600000,
+      "updatedAt": 1792713600000,
+      "settings": {
+        "defaultTimeoutMs": 15000,
+        "defaultRetries": 1,
+        "defaultOnError": "stop",
+        "stepDelayMs": 0
+      },
+      "name": "Look up a list of topics on Wikipedia",
+      "description": "For every term in the Data tab, searches Wikipedia and saves the article title and its first paragraph.",
+      "tags": [
+        "research",
+        "csv"
+      ],
+      "data": {
+        "columns": [
+          "term"
+        ],
+        "rows": [
+          [
+            "Browser extension"
+          ],
+          [
+            "Web scraping"
+          ],
+          [
+            "Robotic process automation"
+          ]
+        ]
+      },
+      "steps": [
+        {
+          "id": "s7",
+          "type": "forEachRow",
+          "params": {
+            "loopVariable": "topic",
+            "maxRows": 200
+          },
+          "name": "For each term",
+          "children": [
+            {
+              "id": "s1",
+              "type": "openUrl",
+              "params": {
+                "url": "https://en.wikipedia.org/wiki/Special:Search?search={{topic_term}}&go=Go"
+              },
+              "name": "Search Wikipedia"
+            },
+            {
+              "id": "s2",
+              "type": "wait",
+              "params": {
+                "mode": "element",
+                "locator": {
+                  "strategy": "css",
+                  "value": "#firstHeading"
+                }
+              }
+            },
+            {
+              "id": "s3",
+              "type": "extractText",
+              "params": {
+                "locator": {
+                  "strategy": "css",
+                  "value": "#firstHeading"
+                },
+                "variable": "article",
+                "all": false
+              },
+              "name": "Article title"
+            },
+            {
+              "id": "s4",
+              "type": "setVariable",
+              "params": {
+                "variable": "summary",
+                "operation": "set",
+                "value": "",
+                "pattern": "",
+                "replacement": ""
+              },
+              "name": "Clear the previous summary"
+            },
+            {
+              "id": "s5",
+              "type": "extractText",
+              "params": {
+                "locator": {
+                  "strategy": "css",
+                  "value": "#mw-content-text p:not(.mw-empty-elt)"
+                },
+                "variable": "summary",
+                "all": false
+              },
+              "name": "First paragraph",
+              "onError": "skip",
+              "timeoutMs": 5000
+            },
+            {
+              "id": "s6",
+              "type": "addRow",
+              "params": {
+                "columns": [
+                  {
+                    "name": "term",
+                    "value": "{{topic_term}}"
+                  },
+                  {
+                    "name": "article",
+                    "value": "{{article}}"
+                  },
+                  {
+                    "name": "summary",
+                    "value": "{{summary}}"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

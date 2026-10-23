@@ -1,0 +1,170 @@
+{
+  "format": "flowpilot.workflows",
+  "schemaVersion": 2,
+  "exportedAt": "2026-10-23T00:00:00.000Z",
+  "workflows": [
+    {
+      "schemaVersion": 2,
+      "id": "quotes-all-pages-to-csv",
+      "favorite": false,
+      "variables": [],
+      "createdAt": 1792713600000,
+      "updatedAt": 1792713600000,
+      "settings": {
+        "defaultTimeoutMs": 15000,
+        "defaultRetries": 1,
+        "defaultOnError": "stop",
+        "stepDelayMs": 0
+      },
+      "name": "Scrape every quote across all pages",
+      "description": "Collects quote, author and tags from quotes.toscrape.com (a site built for scraping practice), following “Next” until the last page.",
+      "tags": [
+        "extraction",
+        "pagination"
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "type": "openUrl",
+          "params": {
+            "url": "https://quotes.toscrape.com/"
+          }
+        },
+        {
+          "id": "s11",
+          "type": "repeat",
+          "params": {
+            "times": 50,
+            "loopVariable": "page"
+          },
+          "name": "For each page",
+          "children": [
+            {
+              "id": "s7",
+              "type": "forEachElement",
+              "params": {
+                "locator": {
+                  "strategy": "css",
+                  "value": ".quote"
+                },
+                "loopVariable": "q",
+                "maxItems": 100
+              },
+              "name": "For each quote",
+              "children": [
+                {
+                  "id": "s2",
+                  "type": "extractText",
+                  "params": {
+                    "locator": {
+                      "strategy": "css",
+                      "value": "{{q_selector}} .text"
+                    },
+                    "variable": "quote",
+                    "all": false
+                  }
+                },
+                {
+                  "id": "s3",
+                  "type": "extractText",
+                  "params": {
+                    "locator": {
+                      "strategy": "css",
+                      "value": "{{q_selector}} .author"
+                    },
+                    "variable": "author",
+                    "all": false
+                  }
+                },
+                {
+                  "id": "s4",
+                  "type": "extractText",
+                  "params": {
+                    "locator": {
+                      "strategy": "css",
+                      "value": "{{q_selector}} .tags .tag"
+                    },
+                    "variable": "tags",
+                    "all": true
+                  },
+                  "onError": "skip",
+                  "timeoutMs": 1000,
+                  "retries": 0
+                },
+                {
+                  "id": "s5",
+                  "type": "setVariable",
+                  "params": {
+                    "variable": "tags",
+                    "operation": "regexReplace",
+                    "value": "",
+                    "pattern": "\\n",
+                    "replacement": ", "
+                  }
+                },
+                {
+                  "id": "s6",
+                  "type": "addRow",
+                  "params": {
+                    "columns": [
+                      {
+                        "name": "page",
+                        "value": "{{page_index}}"
+                      },
+                      {
+                        "name": "quote",
+                        "value": "{{quote}}"
+                      },
+                      {
+                        "name": "author",
+                        "value": "{{author}}"
+                      },
+                      {
+                        "name": "tags",
+                        "value": "{{tags}}"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "id": "s9",
+              "type": "if",
+              "params": {
+                "condition": "elementMissing",
+                "locator": {
+                  "strategy": "css",
+                  "value": "li.next > a"
+                },
+                "value": "",
+                "variable": "",
+                "operator": "equals"
+              },
+              "name": "Last page?",
+              "children": [
+                {
+                  "id": "s8",
+                  "type": "break",
+                  "params": {}
+                }
+              ],
+              "elseChildren": []
+            },
+            {
+              "id": "s10",
+              "type": "click",
+              "params": {
+                "locator": {
+                  "strategy": "css",
+                  "value": "li.next > a"
+                }
+              },
+              "name": "Next page"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

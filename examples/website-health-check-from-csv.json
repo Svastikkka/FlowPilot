@@ -1,0 +1,159 @@
+{
+  "format": "flowpilot.workflows",
+  "schemaVersion": 2,
+  "exportedAt": "2026-10-23T00:00:00.000Z",
+  "workflows": [
+    {
+      "schemaVersion": 2,
+      "id": "website-health-check-from-csv",
+      "favorite": false,
+      "variables": [],
+      "createdAt": 1792713600000,
+      "updatedAt": 1792713600000,
+      "settings": {
+        "defaultTimeoutMs": 20000,
+        "defaultRetries": 0,
+        "defaultOnError": "skip",
+        "stepDelayMs": 0
+      },
+      "name": "Website health check from a CSV list",
+      "description": "Opens every URL in the Data tab and checks that the expected text appears. Produces a pass/fail table. Import your own CSV with url and expect columns.",
+      "tags": [
+        "monitoring",
+        "qa",
+        "csv"
+      ],
+      "data": {
+        "columns": [
+          "url",
+          "expect"
+        ],
+        "rows": [
+          [
+            "https://en.wikipedia.org/wiki/Main_Page",
+            "Wikipedia"
+          ],
+          [
+            "https://www.iana.org/help/example-domains",
+            "Example Domains"
+          ],
+          [
+            "https://quotes.toscrape.com/",
+            "Quotes to Scrape"
+          ],
+          [
+            "https://books.toscrape.com/",
+            "All products"
+          ]
+        ]
+      },
+      "steps": [
+        {
+          "id": "s7",
+          "type": "forEachRow",
+          "params": {
+            "loopVariable": "site",
+            "maxRows": 500
+          },
+          "name": "For each site",
+          "children": [
+            {
+              "id": "s1",
+              "type": "setVariable",
+              "params": {
+                "variable": "title",
+                "operation": "set",
+                "value": "(page did not load)",
+                "pattern": "",
+                "replacement": ""
+              }
+            },
+            {
+              "id": "s2",
+              "type": "openUrl",
+              "params": {
+                "url": "{{site_url}}"
+              },
+              "name": "Open the site"
+            },
+            {
+              "id": "s3",
+              "type": "capturePage",
+              "params": {
+                "what": "title",
+                "variable": "title"
+              }
+            },
+            {
+              "id": "s6",
+              "type": "if",
+              "params": {
+                "condition": "textPresent",
+                "locator": {
+                  "strategy": "css",
+                  "value": ""
+                },
+                "value": "{{site_expect}}",
+                "variable": "",
+                "operator": "equals"
+              },
+              "name": "Expected text present?",
+              "children": [
+                {
+                  "id": "s4",
+                  "type": "addRow",
+                  "params": {
+                    "columns": [
+                      {
+                        "name": "url",
+                        "value": "{{site_url}}"
+                      },
+                      {
+                        "name": "status",
+                        "value": "PASS"
+                      },
+                      {
+                        "name": "title",
+                        "value": "{{title}}"
+                      },
+                      {
+                        "name": "checked",
+                        "value": "{{datetime}}"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "elseChildren": [
+                {
+                  "id": "s5",
+                  "type": "addRow",
+                  "params": {
+                    "columns": [
+                      {
+                        "name": "url",
+                        "value": "{{site_url}}"
+                      },
+                      {
+                        "name": "status",
+                        "value": "FAIL: “{{site_expect}}” not found"
+                      },
+                      {
+                        "name": "title",
+                        "value": "{{title}}"
+                      },
+                      {
+                        "name": "checked",
+                        "value": "{{datetime}}"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

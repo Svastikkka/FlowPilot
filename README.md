@@ -99,6 +99,13 @@ Every listing field, permission justification and asset is listed in
    This uses Chrome's `activeTab` grant for that page, so no permanent site
    access is needed.
 
+### Examples
+
+Importable example workflows are in [examples/](examples/). They export a
+YouTube channel's Shorts to CSV, scrape every page of a paginated site, watch
+a price, turn a Wikipedia table into CSV, health-check a list of URLs, and look
+up a list of topics. Use **Import** on the dashboard and pick a file.
+
 ### Logic and data
 
 - **Blocks hold steps.** If / Else and the loops appear in the step list with
@@ -251,6 +258,7 @@ src/storage    IndexedDB repositories + chrome.storage settings
 src/ui         React dashboard, editor, monitor, popup
 src/templates  starter templates
 tests          unit / functional / e2e
+examples       importable example workflows
 docs           architecture, Automa comparison
 store          Chrome Web Store listing, privacy policy for the gist, asset generator
 ```

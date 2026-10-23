@@ -36,11 +36,11 @@ export function accessNeeds(workflow: Pick<Workflow, 'steps'>): AccessNeeds {
   walk(workflow.steps, (s) => {
     if (s.disabled) return false;
     if (s.type === 'openUrl') {
-      if (s.params.url.includes('{{')) reasons.add('It opens URLs built from variables, so the sites are only known at run time.');
-      else {
-        const o = originPattern(s.params.url);
-        if (o) origins.add(o);
-      }
+      // A variable in the path or query still has a fixed site; only a variable host needs "all sites".
+      const host = /^(https?):\/\/([^/?#]+)/i.exec(s.params.url.trim());
+      const o = host && !host[2].includes('{{') ? originPattern(`${host[1]}://${host[2]}/`) : null;
+      if (o) origins.add(o);
+      else reasons.add('It opens URLs built from variables, so the sites are only known at run time.');
     }
     if (s.type === 'screenshot') reasons.add('Chrome only allows screenshots with access to all sites (or for runs started from the toolbar popup).');
   });

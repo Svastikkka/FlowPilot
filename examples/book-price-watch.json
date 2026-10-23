@@ -1,0 +1,184 @@
+{
+  "format": "flowpilot.workflows",
+  "schemaVersion": 2,
+  "exportedAt": "2026-10-23T00:00:00.000Z",
+  "workflows": [
+    {
+      "schemaVersion": 2,
+      "id": "book-price-watch",
+      "favorite": false,
+      "variables": [
+        {
+          "name": "productUrl",
+          "defaultValue": "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html",
+          "description": "Product page URL",
+          "askAtRunStart": true
+        },
+        {
+          "name": "targetPrice",
+          "defaultValue": "60",
+          "description": "Alert when the price is below",
+          "askAtRunStart": true
+        }
+      ],
+      "createdAt": 1792713600000,
+      "updatedAt": 1792713600000,
+      "settings": {
+        "defaultTimeoutMs": 15000,
+        "defaultRetries": 1,
+        "defaultOnError": "stop",
+        "stepDelayMs": 0
+      },
+      "name": "Price watch: alert when a book gets cheaper",
+      "description": "Checks a product page on books.toscrape.com (a practice shop) and asks you to take a look when the price is below your target. Records each check in the results table.",
+      "tags": [
+        "monitoring",
+        "shopping"
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "type": "openUrl",
+          "params": {
+            "url": "{{productUrl}}"
+          },
+          "name": "Open the product page"
+        },
+        {
+          "id": "s2",
+          "type": "extractText",
+          "params": {
+            "locator": {
+              "strategy": "css",
+              "value": ".product_main h1"
+            },
+            "variable": "product",
+            "all": false
+          },
+          "name": "Product name"
+        },
+        {
+          "id": "s3",
+          "type": "extractText",
+          "params": {
+            "locator": {
+              "strategy": "css",
+              "value": ".product_main p.price_color"
+            },
+            "variable": "price",
+            "all": false
+          },
+          "name": "Price"
+        },
+        {
+          "id": "s4",
+          "type": "setVariable",
+          "params": {
+            "variable": "price",
+            "operation": "regexExtract",
+            "value": "",
+            "pattern": "[\\d.]+",
+            "replacement": ""
+          },
+          "name": "Keep the number only"
+        },
+        {
+          "id": "s5",
+          "type": "extractText",
+          "params": {
+            "locator": {
+              "strategy": "css",
+              "value": ".product_main p.availability"
+            },
+            "variable": "stock",
+            "all": false
+          },
+          "name": "Availability"
+        },
+        {
+          "id": "s9",
+          "type": "if",
+          "params": {
+            "condition": "variable",
+            "locator": {
+              "strategy": "css",
+              "value": ""
+            },
+            "value": "{{targetPrice}}",
+            "variable": "price",
+            "operator": "lessThan"
+          },
+          "name": "Below my target?",
+          "children": [
+            {
+              "id": "s6",
+              "type": "addRow",
+              "params": {
+                "columns": [
+                  {
+                    "name": "product",
+                    "value": "{{product}}"
+                  },
+                  {
+                    "name": "price",
+                    "value": "{{price}}"
+                  },
+                  {
+                    "name": "stock",
+                    "value": "{{stock}}"
+                  },
+                  {
+                    "name": "checked",
+                    "value": "{{datetime}}"
+                  },
+                  {
+                    "name": "alert",
+                    "value": "below target"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "s7",
+              "type": "confirm",
+              "params": {
+                "message": "{{product}} is now {{price}} (target {{targetPrice}}). {{stock}}."
+              },
+              "name": "Tell me"
+            }
+          ],
+          "elseChildren": [
+            {
+              "id": "s8",
+              "type": "addRow",
+              "params": {
+                "columns": [
+                  {
+                    "name": "product",
+                    "value": "{{product}}"
+                  },
+                  {
+                    "name": "price",
+                    "value": "{{price}}"
+                  },
+                  {
+                    "name": "stock",
+                    "value": "{{stock}}"
+                  },
+                  {
+                    "name": "checked",
+                    "value": "{{datetime}}"
+                  },
+                  {
+                    "name": "alert",
+                    "value": ""
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

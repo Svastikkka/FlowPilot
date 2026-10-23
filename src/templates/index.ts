@@ -57,12 +57,12 @@ const CORE_TEMPLATES: Template[] = [
     build: () =>
       newWorkflow({
         name: 'Extract page information',
-        description: 'Reads visible information from a page and prepares a summary to copy.',
+        description: 'Reads visible information from a page and prepares a summary to copy. Uses books.toscrape.com, a site built for practice; change the URL and selectors for your own page.',
         tags: ['extraction', 'template'],
         steps: [
-          createStep('openUrl', { params: { url: 'https://example.com' } }),
+          createStep('openUrl', { params: { url: 'https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html' } }),
           createStep('extractText', { name: 'Main heading', params: { locator: css('h1'), variable: 'heading', all: false } }),
-          createStep('extractText', { name: 'Body text', params: { locator: css('p'), variable: 'paragraphs', all: true } }),
+          createStep('extractText', { name: 'Body text', params: { locator: css('article.product_page > p'), variable: 'paragraphs', all: true } }),
           createStep('capturePage', { params: { what: 'title', variable: 'pageTitle' } }),
           createStep('capturePage', { params: { what: 'url', variable: 'pageUrl' } }),
           createStep('copyToClipboard', {
@@ -83,11 +83,11 @@ const CORE_TEMPLATES: Template[] = [
         tags: ['navigation', 'template'],
         settings: { defaultTimeoutMs: 15_000, defaultRetries: 1, defaultOnError: 'skip', stepDelayMs: 500 },
         steps: [
-          createStep('openUrl', { name: 'Page 1', params: { url: 'https://example.com' } }),
+          createStep('openUrl', { name: 'Page 1', params: { url: 'https://quotes.toscrape.com/' } }),
           createStep('capturePage', { params: { what: 'title', variable: 'title1' } }),
-          createStep('openUrl', { name: 'Page 2', params: { url: 'https://example.org' } }),
+          createStep('openUrl', { name: 'Page 2', params: { url: 'https://books.toscrape.com/' } }),
           createStep('capturePage', { params: { what: 'title', variable: 'title2' } }),
-          createStep('openUrl', { name: 'Page 3', params: { url: 'https://www.iana.org/help/example-domains' } }),
+          createStep('openUrl', { name: 'Page 3', params: { url: 'https://en.wikipedia.org/wiki/Web_scraping' } }),
           createStep('capturePage', { params: { what: 'title', variable: 'title3' } }),
           createStep('navigate', { name: 'Back to page 2', params: { direction: 'back' } }),
           createStep('copyToClipboard', { params: { template: '1. {{title1}}\n2. {{title2}}\n3. {{title3}}' } }),

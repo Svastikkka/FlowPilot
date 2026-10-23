@@ -13,6 +13,8 @@ const CONTENT_SCRIPT = 'content.js';
 /** How long to wait for a navigation to start after an action before assuming none will. */
 const NAVIGATION_START_GRACE_MS = 400;
 const TAB_POLL_MS = 250;
+/** How long to wait for back/forward to start before concluding there is no such page. */
+const HISTORY_START_GRACE_MS = 1_500;
 
 export function mapChromeError(err: unknown): FlowError {
   if (err instanceof FlowError) return err;
@@ -119,16 +121,44 @@ export class ChromeDriver implements BrowserDriver {
   }
 
   async history(tabId: number, direction: NavigateParams['direction'], timeoutMs: number, signal: AbortSignal): Promise<void> {
-    const loaded = waitForComplete(tabId, timeoutMs, signal, true);
-    try {
-      if (direction === 'back') await chrome.tabs.goBack(tabId);
-      else if (direction === 'forward') await chrome.tabs.goForward(tabId);
-      else await chrome.tabs.reload(tabId);
-    } catch (err) {
-      loaded.catch(() => undefined);
-      throw mapChromeError(err);
+    if (direction === 'reload') {
+      const loaded = waitForComplete(tabId, timeoutMs, signal, true);
+      try {
+        await chrome.tabs.reload(tabId);
+      } catch (err) {
+        loaded.catch(() => undefined);
+        throw mapChromeError(err);
+      }
+      return loaded;
     }
-    await loaded;
+    // chrome.tabs.goBack skips entries created without a user gesture (every
+    // page an automation opens), so navigate from inside the page instead.
+    const before = (await this.dom(tabId, { op: 'pageInfo' })).url;
+    let started = false;
+    const onUpdated = (id: number, info: chrome.tabs.OnUpdatedInfo) => {
+      if (id === tabId && info.status === 'loading') started = true;
+    };
+    chrome.tabs.onUpdated.addListener(onUpdated);
+    try {
+      await this.dom(tabId, { op: 'historyGo', direction });
+      const graceEnd = Date.now() + HISTORY_START_GRACE_MS;
+      for (;;) {
+        if (signal.aborted) throw abortError();
+        if (started) break;
+        let url: string | undefined;
+        try {
+          url = (await this.dom(tabId, { op: 'pageInfo' })).url;
+        } catch {
+          url = undefined; // the page is being replaced
+        }
+        if (url === undefined || url !== before) break;
+        if (Date.now() > graceEnd) throw new FlowError('NAVIGATION_FAILED', 'There is no page to go to in that direction', true);
+        await new Promise((r) => setTimeout(r, TAB_POLL_MS));
+      }
+    } finally {
+      chrome.tabs.onUpdated.removeListener(onUpdated);
+    }
+    await this.waitForSettle(tabId, timeoutMs, signal);
   }
 
   async waitForSettle(tabId: number, timeoutMs: number, signal: AbortSignal): Promise<void> {

@@ -1,0 +1,179 @@
+{
+  "format": "flowpilot.workflows",
+  "schemaVersion": 2,
+  "exportedAt": "2026-10-23T00:00:00.000Z",
+  "workflows": [
+    {
+      "schemaVersion": 2,
+      "id": "youtube-channel-shorts-to-csv",
+      "favorite": false,
+      "variables": [
+        {
+          "name": "channel",
+          "defaultValue": "svastikkka",
+          "description": "Channel handle (without @)",
+          "askAtRunStart": true
+        }
+      ],
+      "createdAt": 1792713600000,
+      "updatedAt": 1792713600000,
+      "settings": {
+        "defaultTimeoutMs": 15000,
+        "defaultRetries": 1,
+        "defaultOnError": "stop",
+        "stepDelayMs": 0
+      },
+      "name": "YouTube: export a channel’s Shorts to CSV",
+      "description": "Lists every Short on a YouTube channel (title and view count) in a results table you can download as CSV. Read-only: it does not like, comment or subscribe.",
+      "tags": [
+        "youtube",
+        "extraction"
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "type": "openUrl",
+          "params": {
+            "url": "https://www.youtube.com/@{{channel}}/shorts"
+          },
+          "name": "Open the channel’s Shorts tab"
+        },
+        {
+          "id": "s2",
+          "type": "wait",
+          "params": {
+            "mode": "duration",
+            "durationMs": 3000
+          },
+          "name": "Let YouTube render the grid"
+        },
+        {
+          "id": "s4",
+          "type": "if",
+          "params": {
+            "condition": "elementMissing",
+            "locator": {
+              "strategy": "css",
+              "value": "ytm-shorts-lockup-view-model"
+            },
+            "value": "",
+            "variable": "",
+            "operator": "equals"
+          },
+          "name": "No Shorts on this channel?",
+          "children": [
+            {
+              "id": "s3",
+              "type": "stop",
+              "params": {
+                "outcome": "failed",
+                "message": "No Shorts found for @{{channel}} — check the handle"
+              }
+            }
+          ],
+          "elseChildren": []
+        },
+        {
+          "id": "s7",
+          "type": "repeat",
+          "params": {
+            "times": 10,
+            "loopVariable": "page"
+          },
+          "name": "Scroll to load more Shorts",
+          "notes": "YouTube loads Shorts as you scroll. Increase \"Times\" for channels with many Shorts.",
+          "children": [
+            {
+              "id": "s5",
+              "type": "scroll",
+              "params": {
+                "mode": "bottom"
+              }
+            },
+            {
+              "id": "s6",
+              "type": "wait",
+              "params": {
+                "mode": "duration",
+                "durationMs": 1500
+              }
+            }
+          ]
+        },
+        {
+          "id": "s12",
+          "type": "forEachElement",
+          "params": {
+            "locator": {
+              "strategy": "css",
+              "value": "ytm-shorts-lockup-view-model"
+            },
+            "loopVariable": "short",
+            "maxItems": 1000
+          },
+          "name": "For each Short",
+          "children": [
+            {
+              "id": "s8",
+              "type": "extractText",
+              "params": {
+                "locator": {
+                  "strategy": "css",
+                  "value": "{{short_selector}} h3"
+                },
+                "variable": "title",
+                "all": false
+              },
+              "name": "Title",
+              "onError": "skip"
+            },
+            {
+              "id": "s9",
+              "type": "setVariable",
+              "params": {
+                "variable": "views",
+                "operation": "set",
+                "value": "{{short}}",
+                "pattern": "",
+                "replacement": ""
+              },
+              "name": "Start from the card text"
+            },
+            {
+              "id": "s10",
+              "type": "setVariable",
+              "params": {
+                "variable": "views",
+                "operation": "regexExtract",
+                "value": "",
+                "pattern": "([\\d.,]+\\s*[KMB]?)\\s+views",
+                "replacement": ""
+              },
+              "name": "Keep the view count"
+            },
+            {
+              "id": "s11",
+              "type": "addRow",
+              "params": {
+                "columns": [
+                  {
+                    "name": "position",
+                    "value": "{{short_index}}"
+                  },
+                  {
+                    "name": "title",
+                    "value": "{{title}}"
+                  },
+                  {
+                    "name": "views",
+                    "value": "{{views}}"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
