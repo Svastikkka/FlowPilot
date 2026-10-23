@@ -1,5 +1,7 @@
 # FlowPilot
 
+[![CI](https://github.com/Svastikkka/FlowPilot/actions/workflows/ci.yml/badge.svg)](https://github.com/Svastikkka/FlowPilot/actions/workflows/ci.yml)
+
 **Your browser. Your workflow. Your rules.**
 
 FlowPilot is a local-first Chrome extension (Manifest V3) for building, saving
@@ -196,6 +198,20 @@ npm run test:e2e         # builds, then drives the real extension in Chromium wi
   automated, so the E2E copy of the extension declares access to the fixture
   server in its manifest. Install the browser once with
   `npx playwright install chromium`.
+
+### Continuous integration
+
+[.github/workflows/ci.yml](.github/workflows/ci.yml) runs on every push to
+`main`, on pull requests, and on demand. It has three jobs:
+
+| Job | What it does |
+|---|---|
+| Typecheck & tests | `npm ci`, typecheck, unit tests, functional tests, on Node 20 and 22 |
+| Build extension | Builds and packages the store zip, checks that the manifest and `package.json` versions match, and uploads the zip as the `flowpilot-extension` artifact |
+| End-to-end | Installs Playwright's Chromium, builds, and runs the E2E suite against the real extension. On failure it uploads the HTML report and traces as `playwright-report` |
+
+On CI, Playwright retries a failed E2E test once and reports it as flaky
+rather than passing it silently.
 
 ---
 
