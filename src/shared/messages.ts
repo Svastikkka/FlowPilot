@@ -1,5 +1,6 @@
 import type { DataTable, Locator, PromptResponse, RunRecord, RunTarget, ScrollParams, SelectParams } from './schema/types';
 import type { SerializedError } from './errors';
+import type { PickMode } from './pickerProtocol';
 
 // ---------------------------------------------------------------------------
 // Background → content script (DOM operations on the run tab)
@@ -66,7 +67,12 @@ export type Command =
   | { type: 'run.stop'; runId: string }
   | { type: 'run.resumeInterrupted'; runId: string; inputs?: Record<string, string> }
   | { type: 'prompt.respond'; runId: string; promptId: string; response: PromptResponse }
-  | { type: 'runs.active' };
+  | { type: 'runs.active' }
+  | { type: 'recorder.start'; url?: string; tabId?: number }
+  | { type: 'recorder.stop' }
+  | { type: 'recorder.discard' }
+  | { type: 'recorder.reattach' }
+  | { type: 'picker.start'; url?: string; mode: PickMode; requestId: string };
 
 export interface CommandResultMap {
   'run.start': { runId: string };
@@ -77,6 +83,11 @@ export interface CommandResultMap {
   'run.resumeInterrupted': { runId: string };
   'prompt.respond': null;
   'runs.active': { runIds: string[] };
+  'recorder.start': { sessionId: string };
+  'recorder.stop': null;
+  'recorder.discard': null;
+  'recorder.reattach': null;
+  'picker.start': null;
 }
 
 export type CommandResponse<T extends Command['type']> =

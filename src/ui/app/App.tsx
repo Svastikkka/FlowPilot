@@ -18,7 +18,7 @@ const NAV: { path: string; label: string; icon: string; match: Route['name'][]; 
   { path: '/', label: 'Workflows', icon: '▤', match: ['dashboard', 'editor', 'new'] },
   { path: '/templates', label: 'Templates', icon: '❖', match: ['templates'] },
   { path: '/history', label: 'Run history', icon: '🕘', match: ['history', 'run'] },
-  { path: '/recorder', label: 'Recorder', icon: '⏺', match: ['recorder'], tag: 'Soon' },
+  { path: '/recorder', label: 'Recorder', icon: '⏺', match: ['recorder'] },
   { path: '/settings', label: 'Settings', icon: '⚙', match: ['settings'] },
   { path: '/privacy', label: 'Privacy', icon: '🛡', match: ['privacy'] },
 ];

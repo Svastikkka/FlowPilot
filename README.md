@@ -33,7 +33,8 @@ the same browser tasks.
 | **Data tables**: import a CSV on the Data tab, edit it in a grid, or choose a different CSV for each run | ✅ Implemented |
 | **Results table**: *Add row to results* steps build a table that downloads as CSV or JSON | ✅ Implemented |
 | Activity log of every step execution (with loop position) | ✅ Implemented |
-| Recorder | ⏳ Planned (Milestone 4). The Recorder page says it isn't available yet, and nothing is recorded. |
+| **Recorder**: record clicks, typing, dropdown and checkbox choices into editable steps; stable locators; sensitive fields become secret variables; review before saving | ✅ Implemented |
+| **Element picker** (🎯 Pick on page): choose targets by clicking, no selectors needed; picks all similar items for loops | ✅ Implemented |
 
 The design, schema and the plan for later milestones are in
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). A feature-by-feature comparison
@@ -80,8 +81,12 @@ Every listing field, permission justification and asset is listed in
 ## Using FlowPilot
 
 1. **Create a workflow**: click **Create workflow** or pick a template.
-2. **Add steps**: start with **Open URL**, then add interactions. Each element
-   step takes a target:
+2. **Add steps**: start with **Open URL**, then add interactions. To choose
+   the element a step works on, press **🎯 Pick on page** and click it. FlowPilot
+   opens the page, outlines elements as you move the mouse (*Button "Save"*,
+   *Field "Email"*), and fills in a stable target. Clicks in pick mode never
+   reach the page. For **For each element** loops, click one item and FlowPilot
+   selects all the similar ones. You can also type a target yourself:
    - **CSS**: `#email`, `button.primary` (in DevTools, right-click the element → Copy → Copy selector)
    - **Text**: the element's visible text, e.g. `Sign in`
    - **Label**: the field's label, aria-label or placeholder
@@ -105,6 +110,27 @@ Importable example workflows are in [examples/](examples/). They export a
 YouTube channel's Shorts to CSV, scrape every page of a paginated site, watch
 a price, turn a Wikipedia table into CSV, health-check a list of URLs, and look
 up a list of topics. Use **Import** on the dashboard and pick a file.
+
+### Recording
+
+Open **Recorder**, enter the page to start on, and press **Start recording**
+(or use **Record this tab** in the toolbar popup). FlowPilot opens the page with
+a red **Recording** badge. Use the site as usual, then press **Stop** on the
+badge, in the popup or on the Recorder page.
+
+- Recorded: clicks, text typed into fields (stored once the field loses focus
+  or you press Enter), dropdown choices, checkboxes and radio buttons, and
+  addresses you type into the address bar.
+- Each element gets the most stable locator FlowPilot can find (test id, id,
+  field name, label or text, then a short CSS path), checked to match exactly
+  one element.
+- Password, one-time-code and card fields are never recorded. Their step uses
+  a secret variable that asks for the value when you run the workflow.
+- Only the recorded tab is watched, only until you stop or close it. If you
+  navigate to a site FlowPilot can't access yet, the Recorder page offers to
+  allow it.
+- Review the steps (remove, reorder, edit targets and text), then **Save as
+  workflow** and refine it in the editor.
 
 ### Logic and data
 
@@ -229,7 +255,9 @@ rather than passing it silently.
   step N**, but it cannot promise uninterrupted execution.
 - Only the top-level frame is automated. Elements inside iframes and closed
   shadow roots can't be targeted, and CSS selectors don't reach into shadow DOM.
-- File-upload inputs and drag-and-drop gestures are not supported.
+- File-upload inputs and drag-and-drop gestures are not supported, and the
+  recorder doesn't capture hovering, scrolling, or actions inside iframes. Add
+  those steps in the editor.
 - Typing sets the field value and dispatches input/change events. It does not
   simulate individual key presses, so pages that listen only for key events may
   not react.

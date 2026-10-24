@@ -5,6 +5,8 @@ import { listWorkflows } from '../../storage/workflows';
 import { useSettings, useTheme } from '../hooks';
 import { StatusBadge } from '../components/ui';
 import { RunDialog } from '../components/RunDialog';
+import { useRecording } from '../pages/Recorder';
+import { sendCommand } from '../api';
 
 // Toolbar popup: run a saved workflow on the current tab. Access to the tab
 // comes from activeTab, granted by the user opening the popup.
@@ -29,6 +31,13 @@ export function Popup() {
   }, []);
 
   const restricted = !tab?.url || !/^https?:/.test(tab.url);
+  const recording = useRecording();
+  const [recError, setRecError] = useState<string | null>(null);
+  const recordThisTab = () => {
+    if (tab?.id === undefined) return;
+    setRecError(null);
+    sendCommand({ type: 'recorder.start', tabId: tab.id }).catch((e: Error) => setRecError(e.message));
+  };
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     return (workflows ?? [])
@@ -58,6 +67,31 @@ export function Popup() {
         </div>
       ) : (
         <>
+          {recording?.status === 'recording' ? (
+            <div className="banner danger small" role="status">
+              <span className="rec-dot" aria-hidden />
+              <div className="banner-body">Recording · {recording.steps.length} step{recording.steps.length === 1 ? '' : 's'} so far</div>
+              <button className="btn btn-sm" onClick={() => openApp('/recorder')}>
+                View
+              </button>
+              <button className="btn btn-sm btn-danger solid" onClick={() => void sendCommand({ type: 'recorder.stop' }).then(() => openApp('/recorder'))}>
+                ■ Stop
+              </button>
+            </div>
+          ) : (
+            <button className="btn" disabled={restricted || !tab?.id || recording?.status === 'stopped'} onClick={recordThisTab} title={recording?.status === 'stopped' ? 'Save or discard the previous recording first' : 'Record your actions on this tab'}>
+              ⏺ Record this tab
+            </button>
+          )}
+          {recording?.status === 'stopped' && (
+            <p className="small muted">
+              A recording is waiting for review.{' '}
+              <a href="#" onClick={(e) => (e.preventDefault(), openApp('/recorder'))}>
+                Review it
+              </a>
+            </p>
+          )}
+          {recError && <p className="small" role="alert" style={{ color: 'var(--danger)' }}>{recError}</p>}
           {restricted && (
             <div className="banner warning small">
               <span aria-hidden>⚠</span>

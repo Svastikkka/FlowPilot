@@ -5,9 +5,10 @@ import type { FieldDef } from '../../shared/schema/actions';
 import { ACTIONS, ACTION_TYPES, actionDef } from '../../shared/schema/actions';
 import type { ValidationIssue } from '../../shared/schema/validate';
 import type { EditorAction } from './state';
+import { PickButton } from './PickButton';
 
 const LOCATOR_HELP: Record<LocatorStrategy, string> = {
-  css: 'CSS selector, e.g. #email or button.primary. Tip: right-click the element → Inspect → Copy → Copy selector.',
+  css: 'Easiest: use 🎯 Pick on page and click the element. Or type a CSS selector, e.g. #email or button.primary.',
   text: 'Visible text of the element, e.g. “Sign in”. Buttons and links are matched first.',
   label: 'Field label, aria-label or placeholder, e.g. “Email address”.',
   xpath: 'XPath expression, e.g. //table//tr[2]/td[1].',
@@ -24,6 +25,8 @@ interface Props {
   onTest: () => void;
   testing: boolean;
   testResult: { status: string; message?: string; runId?: string } | null;
+  /** Page to open when picking an element (nearest earlier Open URL). */
+  pageUrl?: string;
 }
 
 function VariableChips({ names, onInsert }: { names: string[]; onInsert: (name: string) => void }) {
@@ -39,7 +42,7 @@ function VariableChips({ names, onInsert }: { names: string[]; onInsert: (name: 
   );
 }
 
-export function StepConfig({ step, label, workflow, issues, availableVariables, dispatch, onTest, testing, testResult }: Props) {
+export function StepConfig({ step, label, workflow, issues, availableVariables, dispatch, onTest, testing, testResult, pageUrl }: Props) {
   const def = actionDef(step.type);
   const params = step.params as unknown as Record<string, unknown>;
   const fieldError = (key?: string) => issues.filter((i) => i.field === key).map((i) => i.message);
@@ -170,11 +173,16 @@ export function StepConfig({ step, label, workflow, issues, availableVariables, 
         const loc = (value as Locator | undefined) ?? { strategy: 'css', value: '' };
         control = (
           <>
+            <PickButton
+              mode={step.type === 'forEachElement' ? 'multiple' : 'single'}
+              pageUrl={pageUrl}
+              onPicked={(locator) => setParam(field.key, locator)}
+            />
             <div className="locator">
               <select aria-label={`${field.label} locator type`} value={loc.strategy} onChange={(e) => setParam(field.key, { ...loc, strategy: e.target.value })}>
-                <option value="css">CSS</option>
-                <option value="text">Text</option>
-                <option value="label">Label</option>
+                <option value="css">CSS selector</option>
+                <option value="text">Text on page</option>
+                <option value="label">Field label</option>
                 <option value="xpath">XPath</option>
               </select>
               <input

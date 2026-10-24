@@ -27,9 +27,10 @@ FlowPilot automates repetitive work in your browser — filling in forms, collec
 
 BUILD WORKFLOWS VISUALLY
 • Add steps from a palette and configure them in plain forms: open a page, click, enter text, choose from dropdowns, tick checkboxes, wait for elements or text, read text, capture the URL or title, scroll, take screenshots, ask for confirmation, copy results, or stop the run.
-• Target elements by CSS selector, visible text, field label or XPath.
+• Point and click to choose the element a step works on: no CSS or XPath needed (they're still there if you want them).
 • Drag and drop to reorder, duplicate, disable, rename and add notes to steps.
 • Test a single step against the real page while you build.
+• Or record it: press Record, use the page as usual, and FlowPilot turns your clicks, typing and choices into editable steps. Passwords and card numbers are never recorded.
 
 LOGIC WITHOUT CODE
 • If / Else: act only when an element is visible, the page shows certain text, the URL matches, or a variable has a value.
@@ -96,7 +97,7 @@ plain screenshots. The demo data shown is fictional (Brightside Supply,
 ### Single purpose
 
 ```
-FlowPilot lets users build and run their own step-by-step automation workflows (clicking, typing, reading text, waiting) on websites they choose, entirely on their device.
+FlowPilot lets users build (or record) and run their own step-by-step browser automation workflows (opening pages, clicking, typing, reading text, waiting for elements) on websites they choose. Everything runs locally on the user's device; no data is sent to any server.
 ```
 
 ### Permission justifications
@@ -105,8 +106,8 @@ FlowPilot lets users build and run their own step-by-step automation workflows (
 |---|---|
 | `storage` | Saves the user's preferences (theme, execution defaults) locally in chrome.storage.local. |
 | `unlimitedStorage` | Stores the user's workflows, run history, results tables and screenshots locally in IndexedDB; screenshots and large CSV data can exceed the default quota. Nothing is uploaded. |
-| `scripting` | Injects the extension's own bundled content script into the single tab a workflow is running in, so it can perform the user-configured steps (click, type, read text). Only on sites the user has granted. No remote code. |
-| `activeTab` | Lets the user run a saved workflow on the page they are currently viewing by starting it from the toolbar button, without granting permanent access to that site. |
+| `scripting` | Injects the extension's own bundled content script into the single tab a workflow is running in (to perform the user-configured steps: click, type, read text), or into the single tab the user chose to record (to capture their clicks and typing while a visible Recording badge is shown). Only on sites the user has granted. No remote code. |
+| `activeTab` | Lets the user run a saved workflow on, or start recording, the page they are currently viewing from the toolbar button, without granting permanent access to that site. |
 | Host permission `<all_urls>` (optional) | Optional host permission requested at run time, per site, only for sites the user's workflow opens; the user can choose "all sites" (needed for screenshots and for URLs built from variables) and can revoke access in Settings. |
 
 ### Remote code
@@ -121,7 +122,7 @@ workflows.
 ### Data usage
 
 The Chrome Web Store requires disclosure even when data is only processed or
-stored on the device. Tick these four, matching the privacy policy:
+stored on the device. Tick these five, matching the privacy policy:
 
 | Category | Tick | Why |
 |---|---|---|
@@ -132,7 +133,7 @@ stored on the device. Tick these four, matching the privacy policy:
 | Personal communications | ⬜ | Not handled |
 | Location | ⬜ | Not handled |
 | Web history | ✅ | Run history keeps URLs and titles of pages workflows open, with timestamps |
-| User activity | ⬜ | FlowPilot does not monitor clicks or keystrokes (revisit when the recorder ships) |
+| User activity | ✅ | The opt-in recorder captures clicks, typed text and choices in the recorded tab while recording (never password, one-time-code or payment fields) |
 | Website content | ✅ | Extracted text, screenshots and results tables |
 
 Certify all three statements:

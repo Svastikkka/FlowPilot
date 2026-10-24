@@ -40,6 +40,13 @@ export function PrivacyPage() {
           <li>FlowPilot refuses to read password and payment fields.</li>
         </ul>
 
+        <h2>Recording</h2>
+        <p>
+          The recorder only runs when you start it, only in the tab being recorded, and stops when you press Stop or close the tab. It records clicks,
+          text typed into fields, dropdown and checkbox choices, and addresses you open, and shows a “Recording” badge on the page the whole time. Values
+          typed into password, one-time-code and payment fields are never recorded: the step asks for them when the workflow runs instead.
+        </p>
+
         <h2>Websites you automate</h2>
         <p>
           When a workflow fills in or submits a form, that website receives the data — exactly as if you had typed it. The website’s own privacy policy

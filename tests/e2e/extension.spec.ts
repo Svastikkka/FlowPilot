@@ -293,3 +293,100 @@ test('goes back and forward through pages the run opened', async ({ app, site })
   await expect(app.locator('.page-header .badge').first()).toHaveText('Failed', { timeout: 30_000 });
   await expect(app.getByRole('alert').filter({ hasText: 'There is no page to go to in that direction' })).toBeVisible();
 });
+
+test('records real user actions, saves them as a workflow and replays it', async ({ app, site, context }) => {
+  await app.getByRole('link', { name: 'Recorder' }).click();
+  const url = app.getByLabel('Page to start on');
+  await url.fill(`${site.url}/form`);
+  const tabPromise = context.waitForEvent('page');
+  await app.getByRole('button', { name: /Start recording/ }).click();
+  const tab = await tabPromise;
+  await tab.waitForLoadState();
+  await expect(tab.locator('#flowpilot-recording-badge')).toBeAttached({ timeout: 15_000 });
+
+  // A user fills in the form with real (trusted) input.
+  await tab.click('#name');
+  await tab.keyboard.type('Recorded Person');
+  await tab.click('#terms');
+  await tab.getByRole('button', { name: 'Send' }).click();
+  await tab.waitForURL(/\/thanks/);
+  await expect(tab.locator('#flowpilot-recording-badge')).toBeAttached({ timeout: 15_000 });
+
+  await app.bringToFront();
+  await expect(app.getByText('4 so far')).toBeVisible({ timeout: 10_000 });
+  await app.getByRole('button', { name: '■ Stop' }).click();
+  await expect(app.getByText('4 recorded steps')).toBeVisible();
+  await expect(app.getByLabel('Step 2 text')).toHaveValue('Recorded Person');
+  await expect(tab.locator('#flowpilot-recording-badge')).toHaveCount(0);
+  expect(site.submissions).toHaveLength(1);
+
+  await app.getByLabel('Workflow name').fill('Recorded signup');
+  await app.getByRole('button', { name: 'Save as workflow' }).click();
+  await expect(app.getByRole('textbox', { name: 'Workflow name' })).toHaveValue('Recorded signup');
+  await expect(app.getByRole('treeitem', { name: /Step 4: Click/ })).toBeVisible();
+
+  await app.getByRole('button', { name: '▶ Run' }).click();
+  const dialog = app.getByRole('dialog', { name: /Run “Recorded signup”/ });
+  const ack = dialog.getByLabel('I understand and want to run it');
+  if (await ack.count()) await ack.check();
+  await dialog.getByRole('button', { name: /Start run/ }).click();
+  await expect(app.locator('.page-header .badge').first()).toHaveText('Succeeded', { timeout: 30_000 });
+  expect(site.submissions).toHaveLength(2);
+  expect(Object.fromEntries(site.submissions[1])).toEqual({ name: 'Recorded Person', country: '', terms: 'on' });
+});
+
+test('picks elements on the page instead of typing selectors', async ({ app, site, context }) => {
+  const file = join(mkdtempSync(join(tmpdir(), 'fp-pick-')), 'pick.json');
+  const now = Date.now();
+  writeFileSync(
+    file,
+    JSON.stringify({
+      format: 'flowpilot.workflows',
+      schemaVersion: 2,
+      workflows: [
+        {
+          schemaVersion: 2,
+          id: 'p',
+          name: 'Pick targets',
+          description: '',
+          tags: [],
+          favorite: false,
+          variables: [],
+          settings: { defaultTimeoutMs: 5000, defaultRetries: 0, defaultOnError: 'stop', stepDelayMs: 0 },
+          createdAt: now,
+          updatedAt: now,
+          steps: [
+            { id: '1', type: 'openUrl', params: { url: `${site.url}/form` } },
+            { id: '2', type: 'click', params: { locator: { strategy: 'css', value: '' } } },
+          ],
+        },
+      ],
+    }),
+  );
+  await app.locator('input[type=file]').setInputFiles(file);
+  await app.getByRole('dialog', { name: 'Import complete' }).getByRole('button', { name: 'Done' }).click();
+  await app.getByRole('article').filter({ hasText: 'Pick targets' }).getByRole('link', { name: 'Edit' }).click();
+  await app.getByRole('treeitem', { name: /Step 2: Click/ }).click();
+
+  const tabPromise = context.waitForEvent('page');
+  await app.getByRole('button', { name: /Pick on page/ }).click();
+  const tab = await tabPromise;
+  await expect(tab.locator('#flowpilot-picker')).toBeAttached({ timeout: 15_000 });
+  await tab.getByRole('button', { name: 'Send' }).hover();
+  await tab.getByRole('button', { name: 'Send' }).click();
+  await expect(tab.locator('#flowpilot-picker')).toHaveCount(0);
+  expect(site.submissions).toHaveLength(0); // the page never saw the click
+
+  await expect(app.getByText('Picked: Button “Send”')).toBeVisible({ timeout: 10_000 });
+  await expect(app.getByLabel(/^Element( \*)?$/)).toHaveValue('Send');
+
+  // Run it: the picked target works.
+  await app.getByRole('button', { name: 'Save', exact: true }).click();
+  await app.getByRole('button', { name: '▶ Run' }).click();
+  const dialog = app.getByRole('dialog', { name: /Run “Pick targets”/ });
+  const ack = dialog.getByLabel('I understand and want to run it');
+  if (await ack.count()) await ack.check();
+  await dialog.getByRole('button', { name: /Start run/ }).click();
+  await expect(app.locator('.page-header .badge').first()).toHaveText('Succeeded', { timeout: 30_000 });
+  expect(site.submissions).toHaveLength(1);
+});

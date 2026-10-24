@@ -17,6 +17,7 @@ function event() {
 
 export interface ChromeMock {
   storageData: Record<string, unknown>;
+  sessionData: Record<string, unknown>;
   grantedOrigins: Set<string>;
   /** Handles chrome.runtime.sendMessage; tests replace this to simulate the service worker. */
   onCommand: (message: unknown) => unknown;
@@ -29,6 +30,7 @@ export interface ChromeMock {
 export function installChromeMock(): ChromeMock {
   const state: ChromeMock = {
     storageData: {},
+    sessionData: {},
     grantedOrigins: new Set(),
     onCommand: () => ({ ok: true, data: null }),
     ports: [],
@@ -76,6 +78,25 @@ export function installChromeMock(): ChromeMock {
           state.storageData = {};
         }),
       },
+      session: {
+        get: vi.fn(async (key?: string | null) => {
+          if (key == null) return { ...state.sessionData };
+          return key in state.sessionData ? { [key]: structuredClone(state.sessionData[key]) } : {};
+        }),
+        set: vi.fn(async (items: Record<string, unknown>) => {
+          const changes: Record<string, { oldValue?: unknown; newValue?: unknown }> = {};
+          for (const [k, v] of Object.entries(items)) {
+            changes[k] = { oldValue: state.sessionData[k], newValue: structuredClone(v) };
+            state.sessionData[k] = structuredClone(v);
+          }
+          storageChanged.emit(changes, 'session');
+        }),
+        remove: vi.fn(async (key: string) => {
+          const oldValue = state.sessionData[key];
+          delete state.sessionData[key];
+          storageChanged.emit({ [key]: { oldValue } }, 'session');
+        }),
+      },
       onChanged: storageChanged,
     },
     permissions: {
@@ -103,7 +124,9 @@ export function installChromeMock(): ChromeMock {
       }),
       query: vi.fn(async () => [{ id: 5, url: 'https://example.com/', title: 'Example', active: true }]),
       get: vi.fn(async (id: number) => ({ id, status: 'complete' })),
+      update: vi.fn(async (id: number) => ({ id, windowId: 1 })),
     },
+    windows: { update: vi.fn(async () => ({})) },
   };
 
   Object.defineProperty(chromeObj, '__state', { value: state });

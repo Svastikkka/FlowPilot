@@ -57,8 +57,8 @@ may be copied into FlowPilot.** Doing so would put FlowPilot under the AGPL.
 | Blocks group | Collapsible **Group** of steps | none | S–M |
 | **Triggers / scheduling**: manual, interval, specific date, days of week + time, visit URL, keyboard shortcut, context menu, on browser start | **Schedules**: interval, date / time, weekly (`alarms`); keyboard shortcut (`commands`); right-click menu (optional `contextMenus`); on browser start. Scheduled runs pause on confirmation steps and send a notification | `alarms`; optional `contextMenus`, `notifications` | M |
 | "Visit web" trigger | **Run when I visit a URL** (only on sites already granted) | `webNavigation` or `tabs` | M |
-| Element selector / picker | **Pick element** on the page, generating a robust selector (also the basis of the recorder) | none | M |
-| Recording | **Recorder** (already planned as M4) | none | L |
+| Element selector / picker | ✅ **Pick on page**, implemented (single element, or all similar items for loops) | none | — |
+| Recording | ✅ **Recorder**, implemented | none | — |
 | Workflow logs, Get log data | Already in run history; add a per-step **debug log view** | none | S |
 | Export as plain text | Add a **plain text** export format | none | S |
 | Handle dialog (alert / confirm / prompt) | Defer. Automa uses the `debugger` permission (shows Chrome's "is debugging this browser" banner). Without it this needs main-world script overrides | `debugger` | L, risky |
@@ -85,4 +85,4 @@ a graph canvas, and logic & data is built first.
 1. ✅ **Logic & data (Milestone 2 + 3), implemented**: If / Else, Repeat, While, For each element, Break; Set variable with transforms; data tables with CSV import and For each row; plain-text export. *Highest value; already on the roadmap.*
 2. **More interactions**: Get attribute, Hover, Press key, Dispatch event, Upload file, Switch frame, multi-tab steps, Run another workflow, Notify.
 3. **Triggers**: schedules (`alarms`), keyboard shortcut, context menu, on browser start, visit URL.
-4. **Element picker → Recorder (Milestone 4).**
+4. ✅ **Recorder (Milestone 4) and element picker, implemented.**

@@ -7,6 +7,7 @@
   --border-strong: #c5cbd8;
   --text: #171a23;
   --text-2: #4b5263;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%234b5263' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --text-3: #767d8f;
   --accent: #4f46e5;
   --accent-hover: #4338ca;
@@ -39,6 +40,8 @@
     --border-strong: #3c4356;
     --text: #e8eaf0;
     --text-2: #b0b6c5;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23b0b6c5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23b0b6c5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     --text-3: #868da0;
     --accent: #818cf8;
     --accent-hover: #a5b4fc;
@@ -163,6 +166,42 @@ input[type='text'], input[type='search'], input[type='number'], input[type='pass
   border: 1px solid var(--border-strong); background: var(--surface); color: var(--text);
   font: inherit;
 }
+select {
+  appearance: none;
+  padding-right: 34px;
+  background-image: var(--chevron);
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  background-size: 12px;
+  cursor: pointer;
+}
+select::-ms-expand { display: none; }
+
+/* Chrome 135+: style the open list too, so it follows the app theme instead
+   of the OS menu. Older versions keep the native list. */
+@supports (appearance: base-select) {
+  select, ::picker(select) { appearance: base-select; }
+  select { display: flex; align-items: center; }
+  select::picker-icon { display: none; }
+  ::picker(select) {
+    margin-top: 4px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-lg);
+  }
+  select option {
+    padding: 7px 10px 7px 8px;
+    border-radius: 4px;
+    gap: 8px;
+    font-size: 14px;
+  }
+  select option:hover, select option:focus-visible { background: var(--surface-2); outline: none; }
+  select option:checked { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  select option::checkmark { color: var(--accent); }
+}
 textarea { min-height: 72px; resize: vertical; font-family: var(--font); }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 input[aria-invalid='true'], select[aria-invalid='true'], textarea[aria-invalid='true'] { border-color: var(--danger); }
@@ -173,7 +212,7 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .field .error { font-size: 12px; color: var(--danger); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .check { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; }
-.locator { display: grid; grid-template-columns: 110px 1fr; gap: 6px; }
+.locator { display: grid; grid-template-columns: 140px 1fr; gap: 6px; }
 
 /* Surfaces --------------------------------------------------------------- */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
@@ -386,3 +425,20 @@ details.activity > summary::-webkit-details-marker { display: none; }
 .log-list { list-style: none; margin: 0; padding: 8px 18px; max-height: 360px; overflow: auto; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
 .log-list li { display: grid; grid-template-columns: 80px 22px 1fr; gap: 8px; align-items: start; }
 .log-failed { color: var(--danger); }
+
+/* Recorder ---------------------------------------------------------------- */
+.rec-dot { width: 12px; height: 12px; border-radius: 50%; background: #ef4444; flex: none; margin-top: 3px; animation: rec-pulse 1.4s ease-in-out infinite; }
+@keyframes rec-pulse { 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .rec-dot { animation: none; } }
+.rec-steps, .rec-review { list-style: none; margin: 0; padding: 0; }
+.rec-steps li { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--border); }
+.rec-review li { padding: 10px 18px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+.rec-steps li:last-child, .rec-review li:last-child { border-bottom: 0; }
+.rec-fields { display: flex; gap: 8px; align-items: center; padding-left: 36px; flex-wrap: wrap; }
+.rec-fields input { flex: 1; min-width: 200px; }
+
+/* Element picker ---------------------------------------------------------- */
+.pick-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.pick-status.ok { color: var(--success); font-weight: 600; }
+.pick-status.error { color: var(--danger); }
+.pick-status.info { color: var(--text-3); }

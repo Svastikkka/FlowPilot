@@ -13,8 +13,8 @@ import { ConfirmDialog, Loading, useToast } from '../components/ui';
 export const PERMISSIONS: { name: string; why: string }[] = [
   { name: 'storage', why: 'Save your settings in this browser.' },
   { name: 'unlimitedStorage', why: 'Keep workflows, run history and screenshots locally without the default storage quota.' },
-  { name: 'scripting', why: 'Inject FlowPilot’s page helper into the tab a run controls, only on sites you allowed.' },
-  { name: 'activeTab', why: 'Run a workflow on the page you are viewing when you start it from the toolbar button, without granting permanent access.' },
+  { name: 'scripting', why: 'Inject FlowPilot’s page helper into the tab a run controls or that you are recording, only on sites you allowed.' },
+  { name: 'activeTab', why: 'Run or record a workflow on the page you are viewing when you start it from the toolbar button, without granting permanent access.' },
   { name: 'Site access (optional)', why: 'Requested per site when you run a workflow that opens it. You can revoke it below at any time.' },
 ];
 

@@ -4,6 +4,8 @@ import { DOM_CHANNEL } from '../shared/messages';
 import type { DomMessage, DomRequest, DomResponse, DomResult } from '../shared/messages';
 import type { NavigateParams, RunTarget } from '../shared/schema/types';
 import { FlowError } from '../shared/errors';
+import type { RecorderControl } from '../shared/recorderProtocol';
+import type { PickerControl } from '../shared/pickerProtocol';
 
 // BrowserDriver backed by chrome.tabs / chrome.scripting. Works with the
 // minimal permission set: host access comes from optional host permissions
@@ -183,22 +185,31 @@ export class ChromeDriver implements BrowserDriver {
 
   async dom<R extends DomRequest>(tabId: number, request: R): Promise<DomResult<R['op']>> {
     const message: DomMessage = { channel: DOM_CHANNEL, request };
-    let response: DomResponse | undefined;
+    const response = await this.send<DomResponse>(tabId, message);
+    if (!response) throw new FlowError('NAVIGATION_FAILED', 'The page did not respond (it may have navigated)');
+    if (!response.ok) throw new FlowError(response.error.code, response.error.message, !!response.error.fatal);
+    return response.data as DomResult<R['op']>;
+  }
+
+  /** Starts or stops the recorder or picker in a tab, injecting the content script if needed. */
+  async control(tabId: number, message: RecorderControl | PickerControl): Promise<void> {
+    await this.send(tabId, message);
+  }
+
+  /** Sends to the tab's content script, injecting it first if it isn't there yet. */
+  private async send<T>(tabId: number, message: unknown): Promise<T | undefined> {
     try {
-      response = await chrome.tabs.sendMessage(tabId, message, { frameId: 0 });
+      return await chrome.tabs.sendMessage(tabId, message, { frameId: 0 });
     } catch (err) {
       const text = err instanceof Error ? err.message : String(err);
       if (!/Receiving end does not exist|Could not establish connection/i.test(text)) throw mapChromeError(err);
       await this.inject(tabId);
       try {
-        response = await chrome.tabs.sendMessage(tabId, message, { frameId: 0 });
+        return await chrome.tabs.sendMessage(tabId, message, { frameId: 0 });
       } catch (retryErr) {
         throw mapChromeError(retryErr);
       }
     }
-    if (!response) throw new FlowError('NAVIGATION_FAILED', 'The page did not respond (it may have navigated)');
-    if (!response.ok) throw new FlowError(response.error.code, response.error.message, !!response.error.fatal);
-    return response.data as DomResult<R['op']>;
   }
 
   private async inject(tabId: number): Promise<void> {

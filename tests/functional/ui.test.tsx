@@ -307,12 +307,13 @@ describe('settings and privacy', () => {
     await waitFor(async () => expect(await listWorkflows()).toEqual([]));
   });
 
-  it('explains local storage on the privacy page and labels the recorder as not available', async () => {
+  it('explains local storage and recording on the privacy page, and offers the recorder', async () => {
     renderAt('#/privacy');
     expect(await screen.findByText(/not encrypted/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Recording' })).toBeInTheDocument();
     history.replaceState(null, '', '#/recorder');
     act(() => void window.dispatchEvent(new HashChangeEvent('hashchange')));
-    expect(await screen.findByText('Not yet available')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Start recording/ })).toBeInTheDocument();
   });
 });
 
@@ -427,5 +428,64 @@ describe('logic & data in the UI', () => {
     expect(within(table).getAllByRole('row')).toHaveLength(3);
     expect(screen.getByText('Activity log')).toBeInTheDocument();
     expect(screen.getByText(/· Repeat #2/)).toBeInTheDocument();
+  });
+});
+
+describe('element picker in the editor', () => {
+  it('fills a target by clicking on the page, using the nearest Open URL', async () => {
+    const user = userEvent.setup();
+    const w = await saveWorkflow(wf([step('openUrl', { url: 'https://shop.test/cart' }), step('click', { locator: css('') })], { name: 'Pick me' }));
+    mock().onCommand = () => ({ ok: true, data: null });
+    renderAt(`#/workflows/${w.id}`);
+    await user.click(await screen.findByRole('treeitem', { name: /Step 2: Click/ }));
+    const panel = screen.getByRole('complementary', { name: 'Configuration' });
+    await user.click(within(panel).getByRole('button', { name: /Pick on page/ }));
+
+    await waitFor(() => expect(commands().some((c) => c.type === 'picker.start')).toBe(true));
+    const start = commands().find((c) => c.type === 'picker.start') as Extract<Command, { type: 'picker.start' }>;
+    expect(start).toMatchObject({ url: 'https://shop.test/cart', mode: 'single' });
+    expect(mock().permissionPrompts).toEqual([{ origins: ['https://shop.test/*'] }]);
+    expect(within(panel).getByText(/Click the element in the page that opened/)).toBeInTheDocument();
+
+    // The service worker reports the user's click.
+    await act(() =>
+      chrome.storage.session.set({
+        pickResult: { requestId: start.requestId, locator: { strategy: 'text', value: 'Checkout' }, description: 'Button “Checkout”', count: 1 },
+      }),
+    );
+    expect(await within(panel).findByText('Picked: Button “Checkout”')).toBeInTheDocument();
+    expect(within(panel).getByLabelText(/^Element/, { selector: 'input' })).toHaveValue('Checkout');
+    expect(within(panel).getByLabelText('Element locator type')).toHaveValue('text');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(async () => expect((await getWorkflow(w.id))!.steps[1]).toMatchObject({ params: { locator: { strategy: 'text', value: 'Checkout' } } }));
+  });
+
+  it('asks which page to open when the workflow has no Open URL yet, and picks similar items for loops', async () => {
+    const user = userEvent.setup();
+    const loop = { ...step('forEachElement', { locator: css('') }), children: [] };
+    const w = await saveWorkflow(wf([loop as never], { name: 'Loop pick' }));
+    mock().onCommand = () => ({ ok: true, data: null });
+    renderAt(`#/workflows/${w.id}`);
+    const panel = await screen.findByRole('complementary', { name: 'Configuration' });
+    await user.click(within(panel).getByRole('button', { name: /Pick on page/ }));
+    const dialog = await screen.findByRole('dialog', { name: 'Which page should FlowPilot open?' });
+    const input = within(dialog).getByLabelText('Page address');
+    await user.clear(input);
+    await user.type(input, 'https://news.test/');
+    await user.click(within(dialog).getByRole('button', { name: 'Open and pick' }));
+    await waitFor(() => expect(commands()).toContainEqual(expect.objectContaining({ type: 'picker.start', url: 'https://news.test/', mode: 'multiple' })));
+  });
+
+  it('shows cancellation and errors', async () => {
+    const user = userEvent.setup();
+    const w = await saveWorkflow(wf([step('openUrl', { url: 'https://shop.test/' }), step('click', { locator: css('') })]));
+    mock().onCommand = (m) =>
+      (m as { command: Command }).command.type === 'picker.start'
+        ? { ok: false, error: { code: 'PERMISSION_DENIED', message: 'FlowPilot does not have access to this site.' } }
+        : { ok: true, data: null };
+    renderAt(`#/workflows/${w.id}`);
+    await user.click(await screen.findByRole('treeitem', { name: /Step 2/ }));
+    await user.click(screen.getByRole('button', { name: /Pick on page/ }));
+    expect(await screen.findByText('FlowPilot does not have access to this site.')).toBeInTheDocument();
   });
 });

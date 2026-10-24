@@ -28,8 +28,15 @@ To do what you configure, FlowPilot handles these kinds of data locally:
   variables marked *secret* are held in memory for the duration of a run and
   are never saved. FlowPilot never reads password fields.
 
-FlowPilot does not monitor your clicks, keystrokes or browsing outside a
-workflow you run. It does not handle location, health, financial or personal
+- **User activity (only while you record)**: when you start the recorder,
+  FlowPilot records your clicks, the text you type into fields, dropdown and
+  checkbox choices, and addresses you open, only in the tab being recorded and
+  only until you press Stop. A "Recording" badge is shown on the page the
+  whole time. Values typed into password, one-time-code and payment fields are
+  never recorded.
+
+Outside a recording, FlowPilot does not monitor your clicks, keystrokes or
+browsing. It does not handle location, health, financial or personal
 communications data.
 
 ## Data FlowPilot stores on your device
@@ -37,6 +44,7 @@ communications data.
 | Data | Purpose | Location | Retention |
 |---|---|---|---|
 | Workflow definitions (steps, selectors, variable names and default values, notes, data tables / imported CSV rows) | Run your workflows | IndexedDB in your Chrome profile | Until you delete the workflow or all data |
+| A recording in progress (the steps recorded so far) | Turn your actions into a workflow | `chrome.storage.session` (memory only, cleared when Chrome closes) | Until you save or discard it |
 | Run history (status, timings, step messages, errors) | Show results and errors | IndexedDB | Your most recent runs, 200 by default (configurable) |
 | Extracted values, results tables, activity logs and screenshots | Show and export run results | IndexedDB | Deleted with the run they belong to |
 | Settings (theme, defaults) | Remember preferences | `chrome.storage.local` | Until you delete all data or uninstall |

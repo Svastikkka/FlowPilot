@@ -238,7 +238,7 @@ action that runs arbitrary JavaScript.
 | M3 — Data | Data tables with CSV import / grid editing / per-run CSV, For each data row, results table with CSV / JSON export, activity log | **Implemented** |
 | M3b — More interactions (from the Automa comparison) | Get attribute, hover, press key, dispatch event, upload file, iframes, multi-tab, run another workflow, notifications | Planned |
 | M3c — Triggers (from the Automa comparison) | Schedules (`alarms`), keyboard shortcut, context menu, on browser start, on URL visit | Planned |
-| M4 — Recorder | Opt-in recorder for clicks / typing / selects on the selected tab, password and sensitive-field exclusion, review-before-save | Planned |
+| M4 — Recorder | Opt-in recorder for clicks / typing / selects on the selected tab, password and sensitive-field exclusion, review-before-save | **Implemented** — session in `chrome.storage.session`, re-attached after each page load, events folded into steps by `shared/recorder.ts` |
 | M5 — Release | Playwright end-to-end tests with the unpacked extension, store assets, packaging | Partially: E2E suite, packaging script and store docs exist; store screenshots/promo images still to be made |
 
 ## 6. Future premium capabilities (no cloud required)

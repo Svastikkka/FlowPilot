@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import type { ActionType, RunRecord, Workflow } from '../../shared/schema/types';
 import { TERMINAL_STATUSES } from '../../shared/schema/types';
 import { scopeAt, validateWorkflow } from '../../shared/schema/validate';
-import { findStep, stepNumbers } from '../../shared/schema/tree';
+import { findStep, flatten, stepNumbers } from '../../shared/schema/tree';
 import type { Location } from '../../shared/schema/tree';
 import { exportWorkflows } from '../../shared/schema/importExport';
 import { deleteWorkflow, getWorkflow, saveWorkflow } from '../../storage/workflows';
@@ -140,6 +140,17 @@ function Editor({ initial }: { initial: Workflow }) {
 
   const availableVariables = useMemo(() => (selectedId ? scopeAt(workflow, selectedId) : []), [workflow, selectedId]);
 
+  // The page to pick elements on: the nearest Open URL before the selected step.
+  const pickUrl = useMemo(() => {
+    const all = flatten(workflow.steps);
+    const index = all.findIndex((s) => s.id === selectedId);
+    for (let i = index; i >= 0; i--) {
+      const s = all[i];
+      if (s.type === 'openUrl' && !s.disabled && /^https?:\/\/[^{]+$/i.test(s.params.url.trim())) return s.params.url.trim();
+    }
+    return undefined;
+  }, [workflow.steps, selectedId]);
+
   const addStep = (type: ActionType) => {
     dispatch({ type: 'addStep', stepType: type, location: palette?.location });
     setPalette(null);
@@ -248,6 +259,7 @@ function Editor({ initial }: { initial: Workflow }) {
                   onTest={testStep}
                   testing={test?.stepId === selected.id && (test.status === 'Starting…' || test.status === 'Running')}
                   testResult={test?.stepId === selected.id ? test : null}
+                  pageUrl={pickUrl}
                 />
               ) : (
                 <div className="card-pad muted">Select a step to configure it.</div>
