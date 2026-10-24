@@ -1,0 +1,63 @@
+name: Benchmark
+
+# Reliability and speed benchmark (see docs/BENCHMARKS.md):
+#   - browser: scenarios on a local site, run several times each through the
+#     built extension in Chromium (waiting, forms, data, recorder robustness)
+#   - engine: hot paths of the workflow engine timed in Node
+# The run fails when a scenario that should work passes fewer than 2/3 of its
+# attempts, or a timing exceeds bench/budgets.json. The report is shown on the
+# run's summary page and uploaded as an artifact.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC: catches drift in Chromium updates
+  workflow_dispatch:
+    inputs:
+      attempts:
+        description: Attempts per scenario
+        default: '3'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    name: Benchmark
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      BENCH_ATTEMPTS: ${{ inputs.attempts || '3' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build the extension
+        run: npm run build
+
+      - name: Engine benchmark
+        run: npm run bench:engine
+      - name: Browser benchmark
+        run: npm run bench:browser
+
+      - name: Report and check budgets
+        if: ${{ !cancelled() }}
+        run: npm run bench:report
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: benchmark-results
+          path: bench/results/
+          retention-days: 30

@@ -12,6 +12,20 @@ All notable changes to FlowPilot are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-24
+
+### Fixed
+
+- Recorder and element picker no longer use generated ids (like `f-1q2vb91`)
+  as targets, and locate form fields by their name first, so recorded
+  workflows keep working after a site regenerates its ids.
+
+### Development
+
+- Benchmark harness and pipeline: reliability scenarios run through the real
+  extension in Chromium, engine performance timings, budgets, a baseline and a
+  report on every pull request ([docs/BENCHMARKS.md](https://github.com/Svastikkka/FlowPilot/blob/main/docs/BENCHMARKS.md)).
+
 ## [1.0.1] - 2026-10-24
 
 ### Fixed
@@ -67,6 +81,7 @@ entirely on your device: no account, no cloud, no tracking.
 - Confirmation before steps that look like submitting, buying or deleting.
 - Imported workflows are validated and can never run their own code.
 
-[Unreleased]: https://github.com/Svastikkka/FlowPilot/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/Svastikkka/FlowPilot/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/Svastikkka/FlowPilot/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/Svastikkka/FlowPilot/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/Svastikkka/FlowPilot/releases/tag/v1.0.0

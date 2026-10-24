@@ -246,6 +246,15 @@ npm run version:set -- minor        # or major / patch / x.y.z
 git tag -a vx.y.z -m "FlowPilot x.y.z" && git push origin main vx.y.z
 ```
 
+### Benchmarks
+
+`npm run bench` measures reliability and speed. It runs realistic scenarios
+(late elements, re-renders, single-page apps, validation, pagination, infinite
+scroll, CSV loops, and replaying recordings on a changed site) 3 times each
+through the built extension in Chromium, and times the engine's hot paths. It
+runs in CI on every pull request and weekly; see
+[docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+
 ### Continuous integration
 
 [.github/workflows/ci.yml](.github/workflows/ci.yml) runs on every push to
@@ -300,6 +309,7 @@ src/storage    IndexedDB repositories + chrome.storage settings
 src/ui         React dashboard, editor, monitor, popup
 src/templates  starter templates
 tests          unit / functional / e2e
+bench          benchmark site, scenarios, harness, budgets and baseline
 examples       importable example workflows
 docs           architecture, Automa comparison
 store          Chrome Web Store listing, privacy policy for the gist, asset generator

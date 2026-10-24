@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { appendEvent, newSession } from '../../src/shared/recorder';
 import type { RecordedEvent, RecordingSession } from '../../src/shared/recorder';
-import { bestLocator, startRecorder } from '../../src/content/recorder';
+import { bestLocator, stableId, startRecorder } from '../../src/content/recorder';
 import { findAll } from '../../src/content/locator';
 import { RecorderManager } from '../../src/background/recorderManager';
 import type { RecorderDeps } from '../../src/background/recorderManager';
@@ -108,6 +108,15 @@ describe('appendEvent', () => {
   });
 });
 
+describe('stableId', () => {
+  it.each(['email', 'user-name', 'step2', 'checkout_form', 'nav-item-3', 'main'])('keeps human-written id %s', (id) => {
+    expect(stableId(id)).toBe(true);
+  });
+  it.each(['f-1q2vb91', 'react-select-48213-input', 'ember412', 'a8f3e2c1b', 'x1y2', ':r3:', 'mui-7'])('rejects generated id %s', (id) => {
+    expect(stableId(id)).toBe(false);
+  });
+});
+
 describe('bestLocator', () => {
   const unique = (el: Element) => {
     const loc = bestLocator(document, el);
@@ -117,7 +126,7 @@ describe('bestLocator', () => {
     return loc;
   };
 
-  it('prefers test ids, then stable ids, then form names', () => {
+  it('prefers test ids, then form field names, then stable ids', () => {
     document.body.innerHTML = `
       <button data-testid="save-btn">Save</button>
       <input id="email"><input id="react-select-48213-input">
@@ -126,6 +135,9 @@ describe('bestLocator', () => {
     expect(unique(document.getElementById('email')!)).toEqual(css('#email'));
     expect(unique(document.querySelector('[name="city"]')!)).toEqual(css('input[name="city"]'));
     expect(unique(document.querySelectorAll('[name="size"]')[1])).toEqual(css('input[name="size"][value="m"]'));
+    // A field with both: the name wins, because sites regenerate ids more often than field names.
+    document.body.insertAdjacentHTML('beforeend', '<input id="f-1q2vb91" name="customer">');
+    expect(unique(document.getElementById('f-1q2vb91')!)).toEqual(css('input[name="customer"]'));
     // Generated-looking ids are skipped.
     expect(unique(document.getElementById('react-select-48213-input')!).value).not.toContain('48213');
   });

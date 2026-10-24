@@ -17,7 +17,15 @@ const attrValue = (value: string) => value.replace(/\\/g, '\\\\').replace(/"/g, 
 const normalize = (s: string | null | undefined) => (s ?? '').replace(/\s+/g, ' ').trim();
 
 /** IDs that look generated (long digit runs, hashes) change between page loads. */
-const stableId = (id: string) => /^[A-Za-z][\w-]{0,50}$/.test(id) && !/\d{4,}|[0-9a-f]{8,}|^(ember|react|radix|mui|headlessui)/i.test(id);
+/**
+ * IDs written by people look like words ("email", "user-name", "step2").
+ * Generated ones (frameworks, CSS-in-JS, bundlers) mix letters and digits
+ * ("f-1q2vb91", ":r3:", "ember412") or carry long digit runs and hashes.
+ */
+export const stableId = (id: string) =>
+  /^[A-Za-z][\w-]{0,50}$/.test(id) &&
+  !/\d{4,}|[0-9a-f]{8,}|^(ember|react|radix|mui|headlessui)/i.test(id) &&
+  id.split(/[-_]/).every((part) => /^[A-Za-z]+\d{0,2}$|^\d{1,3}$/.test(part));
 
 function uniqueCss(doc: Document, selector: string, el: Element): boolean {
   try {
@@ -63,8 +71,7 @@ export function bestLocator(doc: Document, el: Element): Locator {
       if (uniqueCss(doc, selector, el)) return { strategy: 'css', value: selector };
     }
   }
-  if (el.id && stableId(el.id) && uniqueCss(doc, `#${cssEscape(el.id)}`, el)) return { strategy: 'css', value: `#${cssEscape(el.id)}` };
-
+  // Form fields: the name is what the server receives, so it rarely changes.
   const tag = el.tagName.toLowerCase();
   const name = el.getAttribute('name');
   if (name && (isInput(el) || isSelect(el) || isTextArea(el) || tag === 'button')) {
@@ -72,6 +79,8 @@ export function bestLocator(doc: Document, el: Element): Locator {
     const selector = `${tag}[name="${attrValue(name)}"]${type}`;
     if (uniqueCss(doc, selector, el)) return { strategy: 'css', value: selector };
   }
+
+  if (el.id && stableId(el.id) && uniqueCss(doc, `#${cssEscape(el.id)}`, el)) return { strategy: 'css', value: `#${cssEscape(el.id)}` };
 
   // Links are best identified by where they go.
   const href = el.tagName === 'A' ? el.getAttribute('href') : null;

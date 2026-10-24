@@ -1,6 +1,6 @@
 {
   "name": "flowpilot",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "FlowPilot — local-first browser workflow automation (Chrome MV3 extension)",
   "type": "module",
@@ -17,7 +17,12 @@
     "test:e2e": "npm run build && playwright test",
     "store:assets": "npm run build && playwright test --config store/playwright.store.config.ts",
     "version:set": "node scripts/version.mjs set",
-    "version:check": "node scripts/version.mjs check"
+    "version:check": "node scripts/version.mjs check",
+    "bench": "npm run build && npm run bench:engine && npm run bench:browser; npm run bench:report",
+    "bench:engine": "vitest run --config bench/vitest.bench.config.ts",
+    "bench:browser": "playwright test --config bench/playwright.bench.config.ts",
+    "bench:report": "node bench/report.mjs",
+    "bench:baseline": "node bench/report.mjs --update-baseline"
   },
   "dependencies": {
     "idb": "^8.0.4",

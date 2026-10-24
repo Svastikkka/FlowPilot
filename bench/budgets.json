@@ -1,0 +1,27 @@
+{
+  "$comment": "Maximum allowed medians in milliseconds. Generous on purpose (about 3x local browser times and 15x local engine times) so slower CI machines don't fail, while real slowdowns do. Tighten only with evidence from several CI runs.",
+  "browser": {
+    "delayed-element": 8000,
+    "slow-page": 9000,
+    "rerender": 5000,
+    "spa-navigation": 5000,
+    "form-validation": 9000,
+    "controlled-input": 5000,
+    "pagination": 40000,
+    "infinite-scroll": 8000,
+    "csv-25-rows": 210000,
+    "random-banner": 6000,
+    "record-replay": 6000,
+    "record-replay-changed-page": 6000
+  },
+  "engine": {
+    "engine.step_overhead": 0.5,
+    "engine.loop_5000": 1500,
+    "csv.parse_5000x10": 300,
+    "validate.500_steps": 50,
+    "import.10_workflows": 1000,
+    "recorder.append_10k": 200,
+    "locator.best_per_element": 2,
+    "dom.extract_all_400": 600
+  }
+}

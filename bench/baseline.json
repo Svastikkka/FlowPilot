@@ -1,0 +1,72 @@
+{
+  "createdAt": "2026-10-24T15:43:00.439Z",
+  "browser": {
+    "delayed-element": {
+      "passRate": 1,
+      "medianMs": 2373
+    },
+    "slow-page": {
+      "passRate": 1,
+      "medianMs": 2724
+    },
+    "rerender": {
+      "passRate": 1,
+      "medianMs": 1371
+    },
+    "spa-navigation": {
+      "passRate": 1,
+      "medianMs": 1381
+    },
+    "form-validation": {
+      "passRate": 1,
+      "medianMs": 2830
+    },
+    "controlled-input": {
+      "passRate": 1,
+      "medianMs": 1654
+    },
+    "pagination": {
+      "passRate": 1,
+      "medianMs": 13686
+    },
+    "infinite-scroll": {
+      "passRate": 1,
+      "medianMs": 2441
+    },
+    "csv-25-rows": {
+      "passRate": 1,
+      "medianMs": 69764
+    },
+    "random-banner": {
+      "passRate": 1,
+      "medianMs": 1761
+    },
+    "record-replay": {
+      "passRate": 1,
+      "medianMs": 1633
+    },
+    "record-replay-changed-page": {
+      "passRate": 1,
+      "medianMs": 1658
+    },
+    "shadow-dom": {
+      "passRate": 0,
+      "medianMs": 21080
+    },
+    "iframe": {
+      "passRate": 0,
+      "medianMs": 21086
+    }
+  },
+  "reliability": 100,
+  "engine": {
+    "engine.step_overhead": 0.0312,
+    "engine.loop_5000": 98.6444,
+    "csv.parse_5000x10": 14.1659,
+    "validate.500_steps": 1.5044,
+    "import.10_workflows": 51.1234,
+    "recorder.append_10k": 4.8438,
+    "locator.best_per_element": 0.0905,
+    "dom.extract_all_400": 31.9
+  }
+}
