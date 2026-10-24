@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "FlowPilot \u2014 Local Browser Automation",
+  "name": "FlowPilot — Local Browser Automation",
   "short_name": "FlowPilot",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Build, save and run browser workflows locally. Visual editor, loops and CSV data. No account, no cloud, no tracking.",
   "minimum_chrome_version": "116",
   "icons": {

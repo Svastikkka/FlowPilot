@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # release.yml runs the full suite before publishing.
+  workflow_call:
 
 permissions:
   contents: read
@@ -49,14 +51,8 @@ jobs:
       - run: npm ci
       - name: Build and package
         run: npm run package
-      - name: Check manifest and package versions match
-        run: |
-          node -e "
-            const m = require('./dist/manifest.json');
-            const p = require('./package.json');
-            if (m.version !== p.version) { console.error('manifest', m.version, '!= package', p.version); process.exit(1); }
-            console.log('Version', m.version);
-          "
+      - name: Check versions match
+        run: npm run version:check
       - uses: actions/upload-artifact@v4
         with:
           name: flowpilot-extension

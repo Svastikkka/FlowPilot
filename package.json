@@ -1,8 +1,8 @@
 {
   "name": "flowpilot",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "FlowPilot \u2014 local-first browser workflow automation (Chrome MV3 extension)",
+  "description": "FlowPilot — local-first browser workflow automation (Chrome MV3 extension)",
   "type": "module",
   "scripts": {
     "dev": "vite build --watch --mode development",
@@ -15,7 +15,9 @@
     "icons": "node scripts/make-icons.mjs",
     "package": "npm run build && node scripts/package.mjs",
     "test:e2e": "npm run build && playwright test",
-    "store:assets": "npm run build && playwright test --config store/playwright.store.config.ts"
+    "store:assets": "npm run build && playwright test --config store/playwright.store.config.ts",
+    "version:set": "node scripts/version.mjs set",
+    "version:check": "node scripts/version.mjs check"
   },
   "dependencies": {
     "idb": "^8.0.4",

@@ -1,0 +1,85 @@
+name: Release
+
+# Publishes a GitHub Release when a version tag (v1.2.3) is pushed:
+#   1. runs the full CI suite,
+#   2. checks the tag matches package.json, package-lock.json and the manifest,
+#   3. builds the Chrome Web Store zip and its SHA-256 checksum,
+#   4. creates the release with notes from CHANGELOG.md and the commits since
+#      the previous tag.
+#
+# Versions follow Semantic Versioning. To release:
+#   npm run version:set -- major|minor|patch
+#   add a "## [X.Y.Z]" section to CHANGELOG.md, commit, then
+#   git tag vX.Y.Z && git push origin vX.Y.Z
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    name: Build and publish
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history and tags, for the commit list
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Check the tag matches the version in the code
+        run: npm run version:check -- "${TAG#v}"
+
+      - name: Check the version is higher than the last release (semver)
+        run: node scripts/version.mjs check-newer "${TAG#v}"
+
+      - name: Build the store zip
+        run: npm run package
+
+      - name: Checksums
+        working-directory: release
+        run: |
+          sha256sum "flowpilot-${TAG#v}.zip" > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Release notes
+        run: node scripts/release-notes.mjs "${TAG#v}" > release-notes.md
+
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" \
+            "release/flowpilot-${TAG#v}.zip" \
+            release/SHA256SUMS.txt \
+            --title "FlowPilot ${TAG#v}" \
+            --notes-file release-notes.md \
+            --verify-tag
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flowpilot-${{ github.ref_name }}
+          path: |
+            release/flowpilot-*.zip
+            release/SHA256SUMS.txt
+          retention-days: 90

@@ -1,4 +1,4 @@
-# Chrome Web Store listing — FlowPilot 0.2.0
+# Chrome Web Store listing — FlowPilot
 
 Copy each field below into the matching field in the Chrome Web Store
 Developer Dashboard. Regenerate the images with `npm run store:assets` and
@@ -161,7 +161,7 @@ the file name `flowpilot-privacy-policy.md`, and paste the gist URL
 ## Pre-submission checklist
 
 - [ ] `npm test` and `npm run test:e2e` pass
-- [ ] `npm run package` → upload `release/flowpilot-0.2.0.zip`
+- [ ] Upload `flowpilot-<version>.zip` from the [GitHub release](https://github.com/Svastikkka/FlowPilot/releases) (or `npm run package` → `release/flowpilot-<version>.zip`)
 - [ ] `npm run store:assets` → upload the images above
 - [ ] Version matches in `public/manifest.json` and `package.json`
 - [ ] Privacy policy gist is public and its URL is entered
