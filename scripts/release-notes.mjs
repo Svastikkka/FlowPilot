@@ -23,19 +23,22 @@ const next = rest.search(/^## \[/m);
 const section = (next === -1 ? rest : rest.slice(0, next)).replace(/^\[[^\]]+\]: .*$/gm, '').trim();
 
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+// Before the tag exists (previewing), measure from HEAD instead.
+let tagExists = true;
+try {
+  git('rev-parse', '--verify', `refs/tags/v${version}`);
+} catch {
+  tagExists = false;
+}
+const ref = tagExists ? `v${version}` : 'HEAD';
 let previous = '';
 try {
-  previous = git('describe', '--tags', '--abbrev=0', '--match', 'v*', `v${version}^`);
+  previous = git('describe', '--tags', '--abbrev=0', '--match', 'v*', tagExists ? `${ref}^` : ref);
 } catch {
   // First release: no earlier tag.
 }
-const range = previous ? `${previous}..v${version}` : `v${version}`;
-let commits = '';
-try {
-  commits = git('log', '--no-merges', '--pretty=format:- %s (%h)', range);
-} catch {
-  commits = git('log', '--no-merges', '--pretty=format:- %s (%h)', 'HEAD');
-}
+if (previous === `v${version}`) previous = '';
+const commits = git('log', '--no-merges', '--pretty=format:- %s (%h)', previous ? `${previous}..${ref}` : ref);
 
 console.log(`${section}
 

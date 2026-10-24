@@ -1,6 +1,6 @@
 {
   "name": "flowpilot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "FlowPilot — local-first browser workflow automation (Chrome MV3 extension)",
   "type": "module",

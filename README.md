@@ -234,21 +234,17 @@ npm run test:e2e         # builds, then drives the real extension in Chromium wi
 
 ### Releasing
 
-Versions follow [Semantic Versioning](https://semver.org/). See
-[CHANGELOG.md](CHANGELOG.md) for when to bump MAJOR, MINOR or PATCH.
+Versions follow [Semantic Versioning](https://semver.org/). Pushing a `vX.Y.Z`
+tag runs the release pipeline, which tests, builds and publishes a GitHub
+Release with the store zip. The step-by-step guide, including the Chrome Web
+Store upload and what to do when something fails, is in
+[docs/RELEASING.md](docs/RELEASING.md).
 
 ```bash
-npm run version:set -- minor   # or major / patch / an exact x.y.z
-# add a "## [x.y.z] - YYYY-MM-DD" section to CHANGELOG.md, then commit
-git tag vx.y.z && git push origin main vx.y.z
+npm run version:set -- minor        # or major / patch / x.y.z
+# add "## [x.y.z] - YYYY-MM-DD" to CHANGELOG.md, commit, then:
+git tag -a vx.y.z -m "FlowPilot x.y.z" && git push origin main vx.y.z
 ```
-
-Pushing the tag runs [.github/workflows/release.yml](.github/workflows/release.yml).
-It runs the full CI suite, checks that the tag matches `package.json`,
-`package-lock.json` and the manifest and is higher than the previous release,
-then publishes a GitHub Release with `flowpilot-x.y.z.zip`, `SHA256SUMS.txt`,
-and notes taken from the changelog plus the commits since the last tag. Upload
-that zip to the Chrome Web Store.
 
 ### Continuous integration
 

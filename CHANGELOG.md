@@ -12,6 +12,19 @@ All notable changes to FlowPilot are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-24
+
+### Fixed
+
+- Release-notes preview (`node scripts/release-notes.mjs x.y.z` before tagging)
+  now lists only the commits since the last release instead of every commit.
+
+### Documentation
+
+- Added a step-by-step release guide, [docs/RELEASING.md](https://github.com/Svastikkka/FlowPilot/blob/main/docs/RELEASING.md):
+  choosing the version, changelog, tagging, the release pipeline, uploading to
+  the Chrome Web Store, and what to do when something fails.
+
 ## [1.0.0] - 2026-10-24
 
 First public release. FlowPilot builds, records and runs browser workflows
@@ -54,5 +67,6 @@ entirely on your device: no account, no cloud, no tracking.
 - Confirmation before steps that look like submitting, buying or deleting.
 - Imported workflows are validated and can never run their own code.
 
-[Unreleased]: https://github.com/Svastikkka/FlowPilot/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Svastikkka/FlowPilot/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/Svastikkka/FlowPilot/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/Svastikkka/FlowPilot/releases/tag/v1.0.0
